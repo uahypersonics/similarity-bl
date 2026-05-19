@@ -1,0 +1,27 @@
+{
+  "metadata": {
+    "version": "2.0",
+    "description": "Adiabatic wall lookup table for SIMBL similarity solver",
+    "format": "key = (mach, beta), values = [fpp_wall, g_wall]",
+    "generated": "2026-02-16"
+  },
+  "entries": [
+    {"mach": 0.1, "beta": 0.0, "fpp_wall": 0.47, "g_wall": 1.0},
+    {"mach": 0.5, "beta": 0.0, "fpp_wall": 0.48, "g_wall": 1.05},
+    {"mach": 1.0, "beta": 0.0, "fpp_wall": 0.50, "g_wall": 1.2},
+    {"mach": 2.0, "beta": 0.0, "fpp_wall": 0.55, "g_wall": 2.0},
+    {"mach": 3.0, "beta": 0.0, "fpp_wall": 0.58, "g_wall": 2.8},
+    {"mach": 4.0, "beta": 0.0, "fpp_wall": 0.615, "g_wall": 3.7},
+    {"mach": 5.0, "beta": 0.0, "fpp_wall": 0.65, "g_wall": 4.8},
+    {"mach": 6.0, "beta": 0.0, "fpp_wall": 0.68, "g_wall": 6.0},
+    {"mach": 8.0, "beta": 0.0, "fpp_wall": 0.72, "g_wall": 8.5},
+    {"mach": 10.0, "beta": 0.0, "fpp_wall": 0.75, "g_wall": 11.5},
+    {"mach": 2.0, "beta": 0.1, "fpp_wall": 0.60, "g_wall": 2.0},
+    {"mach": 4.0, "beta": 0.1, "fpp_wall": 0.70, "g_wall": 3.8},
+    {"mach": 0.5, "beta": 0.5, "fpp_wall": 0.93, "g_wall": 1.1},
+    {"mach": 1.0, "beta": 0.5, "fpp_wall": 0.95, "g_wall": 1.3},
+    {"mach": 2.0, "beta": 0.5, "fpp_wall": 1.0,  "g_wall": 2.0},
+    {"mach": 2.0, "beta": -0.1, "fpp_wall": 0.45, "g_wall": 2.0},
+    {"mach": 4.0, "beta": -0.1, "fpp_wall": 0.55, "g_wall": 3.5}
+  ]
+}

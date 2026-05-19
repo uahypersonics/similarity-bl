@@ -1,0 +1,14 @@
+{
+  "metadata": {
+    "version": "2.0",
+    "description": "Isothermal wall lookup table for SIMBL similarity solver",
+    "format": "key = (mach, beta, g_wall), values = [fpp_wall, gp_wall]",
+    "generated": "2026-02-15"
+  },
+  "entries": [
+    {"mach": 2.0, "beta": 0.0, "g_wall": 3.0, "fpp_wall": 0.40, "gp_wall": 0.8},
+    {"mach": 4.0, "beta": 0.0, "g_wall": 3.0, "fpp_wall": 0.445, "gp_wall": 1.07},
+    {"mach": 6.0, "beta": 0.0, "g_wall": 3.0, "fpp_wall": 0.48, "gp_wall": 1.3},
+    {"mach": 8.0, "beta": 0.0, "g_wall": 3.0, "fpp_wall": 0.50, "gp_wall": 1.5}
+  ]
+}

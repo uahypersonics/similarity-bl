@@ -1,0 +1,83 @@
+# BSD-3-Clause License - see LICENSE file
+[build-system]
+requires = ["setuptools>=61.0", "setuptools-scm>=8", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "similarity-bl"
+dynamic = ["version"]
+description = "Compressible similarity boundary layer solver with Lees-Dorodnitsyn transformation"
+readme = "README.md"
+license = {text = "BSD-3-Clause"}
+requires-python = ">=3.11"
+authors = [
+    {name = "Christoph Hader", email = "chader@arizona.edu"},
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: BSD License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Physics",
+]
+keywords = ["boundary-layer", "compressible-flow", "similarity-solution", "cfd", "hypersonics"]
+
+dependencies = [
+    "numpy>=1.24.0",
+    "scipy>=1.10.0",
+    "typer>=0.9.0",
+    "pydantic>=2.0.0",
+    "tomli-w>=1.0.0",
+    "flow-state-calculator>=0.2.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "ruff>=0.1.0",
+    "mkdocs-material>=9.0",
+    "mkdocstrings[python]>=0.24",
+    "mkdocs-bibtex>=2.0",
+]
+
+[project.scripts]
+simbl = "simbl.cli:cli"
+
+[project.urls]
+Homepage = "https://github.com/uahypersonics/similarity-bl"
+Repository = "https://github.com/uahypersonics/similarity-bl"
+Documentation = "https://uahypersonics.github.io/similarity-bl"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+simbl = ["data/*.json"]
+
+[tool.setuptools_scm]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src", "."]
+
+[tool.coverage.run]
+source = ["simbl"]
+omit = ["*/__pycache__/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP"]
+ignore = ["E501"]
