@@ -2,6 +2,11 @@
 .DS_Store
 **/.DS_Store
 
+archive/
+
+# examples (work in progress, not ready for public docs)
+examples/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
