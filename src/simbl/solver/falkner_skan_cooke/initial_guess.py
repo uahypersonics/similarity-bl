@@ -29,20 +29,21 @@ if TYPE_CHECKING:
 # --------------------------------------------------
 # table configurations (Falkner-Skan-Cooke, 3 shooting variables)
 #
-# g_wall is a value (unknown) for adiabatic, but a key (prescribed) for isothermal
-# adiabatic:  key = (mach, beta, sweep_angle),          values = (fpp_wall, wp_wall, g_wall)
-# isothermal: key = (mach, beta, sweep_angle, g_wall),  values = (fpp_wall, wp_wall, gp_wall)
+# g_wall (= tau_wall = T_wall/T_edge) is a value (unknown) for adiabatic, but a key (prescribed) for isothermal
+# Note: Using 'g_wall' name for compatibility with SimilarityInputs.g_wall attribute
+# adiabatic:  key = (mach, beta, sweep_angle),          values = (fpp_wall, gcfp_wall, g_wall)
+# isothermal: key = (mach, beta, sweep_angle, g_wall),  values = (fpp_wall, gcfp_wall, gp_wall)
 # --------------------------------------------------
 _TABLE_CONFIGS: dict[str, dict] = {
     "adiabatic": {
         "key_fields": ["mach", "beta", "sweep_angle"],
-        "value_fields": ["fpp_wall", "wp_wall", "g_wall"],
+        "value_fields": ["fpp_wall", "gcfp_wall", "g_wall"],
         "default_values": [0.55, 0.55, 3.0],
         "fname": "lookup_fsc_adiabatic.json",
     },
     "isothermal": {
         "key_fields": ["mach", "beta", "sweep_angle", "g_wall"],
-        "value_fields": ["fpp_wall", "wp_wall", "gp_wall"],
+        "value_fields": ["fpp_wall", "gcfp_wall", "gp_wall"],
         "default_values": [0.50, 0.50, 1.0],
         "fname": "lookup_fsc_isothermal.json",
     },
@@ -50,11 +51,11 @@ _TABLE_CONFIGS: dict[str, dict] = {
 
 
 # --------------------------------------------------
-# build_y0: shooting variables --> ODE initial condition [f, f', f'', w, w', g, g']
+# build_y0: shooting variables --> ODE initial condition [f, fp, fpp, g_cf, gcf_p, tau, tau_p]
 # --------------------------------------------------
 def build_y0(
     wall_bc: str,
-    g_wall: float | None,
+    tau_wall: float | None,
     shooting_vars: NDArray[np.float64],
 ) -> NDArray[np.float64]:
     """Build 7-element initial condition vector for FSC ODE integration
@@ -63,30 +64,30 @@ def build_y0(
     ----------
     wall_bc : str
         Wall boundary condition type: "isothermal" or "adiabatic".
-    g_wall : float or None
+    tau_wall : float or None
         Normalized wall temperature T_w / T_e (isothermal only).
     shooting_vars : NDArray[np.float64]
-        Shooting variables [f''(0), w'(0), g_var].
+        Shooting variables [f''(0), g_cf'(0), tau_var].
 
     Returns
     -------
     NDArray[np.float64]
-        Initial conditions [f(0), f'(0), f''(0), w(0), w'(0), g(0), g'(0)].
+        Initial conditions [f(0), fp(0), fpp(0), g_cf(0), gcf_p(0), tau(0), tau_p(0)].
     """
     fpp_0 = shooting_vars[0]
-    wp_0 = shooting_vars[1]
-    g_var = shooting_vars[2]
+    gcfp_0 = shooting_vars[1]
+    tau_var = shooting_vars[2]
 
     if wall_bc == "isothermal":
-        # wall temperature prescribed; g'(0) is the shooting variable
-        g_0 = g_wall
-        gp_0 = g_var
+        # Wall temperature prescribed; tau'(0) is the shooting variable
+        tau_0 = tau_wall
+        taup_0 = tau_var
     else:
-        # adiabatic: zero heat flux g'(0) = 0; g(0) is the shooting variable
-        g_0 = g_var
-        gp_0 = 0.0
+        # Adiabatic: zero heat flux tau'(0) = 0; tau(0) is the shooting variable
+        tau_0 = tau_var
+        taup_0 = 0.0
 
-    return np.array([0.0, 0.0, fpp_0, 0.0, wp_0, g_0, gp_0])
+    return np.array([0.0, 0.0, fpp_0, 0.0, gcfp_0, tau_0, taup_0])
 
 
 # --------------------------------------------------
@@ -113,12 +114,13 @@ def save_converged(result: ShootingResult, problem: SimilarityInputs) -> None:
 
     # key_map: superset of all possible key fields
     # config["key_fields"] picks the relevant subset (e.g. adiabatic uses mach+beta+sweep, isothermal adds g_wall)
-    # FSC solution = [f, f', f'', w, w', g, g']
+    # FSC solution = [f, fp, fpp, g_cf, gcf_p, tau, tau_p]
+    # Note: g_wall refers to T_wall/T_edge (tau), not crossflow
     key_map = {
         "mach": problem.mach_edge,
         "beta": problem.beta,
         "sweep_angle": problem.sweep_angle,
-        "g_wall": result.solution[5, 0],
+        "g_wall": result.solution[5, 0],  # tau(0) = T_wall / T_edge
     }
 
     # get key values for this solution based on config
@@ -128,17 +130,18 @@ def save_converged(result: ShootingResult, problem: SimilarityInputs) -> None:
 
     # val_map: superset of all possible value fields
     # config["value_fields"] picks the relevant subset (e.g. adiabatic stores g_wall, isothermal stores gp_wall)
-    # FSC solution = [f, f', f'', w, w', g, g']
+    # FSC solution = [f, fp, fpp, g_cf, gcf_p, tau, tau_p]
+    # Note: g_wall and gp_wall refer to T_wall/T_edge (tau), not crossflow
     val_map = {
         "fpp_wall": result.solution[2, 0],
-        "wp_wall": result.solution[4, 0],
-        "g_wall": result.solution[5, 0],
-        "gp_wall": result.solution[6, 0],
+        "gcfp_wall": result.solution[4, 0],
+        "g_wall": result.solution[5, 0],      # tau(0) = T_wall / T_edge
+        "gp_wall": result.solution[6, 0],     # tau'(0) = dT/deta at wall
     }
 
     # get values for this solution based on config
-    # for adiabatic: config["value_fields"] = ["fpp_wall", "wp_wall", "g_wall"]
-    # for isothermal: config["value_fields"] = ["fpp_wall", "wp_wall", "gp_wall"]
+    # for adiabatic: config["value_fields"] = ["fpp_wall", "gcfp_wall", "g_wall"]
+    # for isothermal: config["value_fields"] = ["fpp_wall", "gcfp_wall", "gp_wall"]
     values = {v: val_map[v] for v in config["value_fields"]}
 
     # update lookup table with this converged solution
@@ -175,7 +178,7 @@ def get_initial_guess(
     # (FSC at lambda=0 reduces to FS in the streamwise/energy fields, and
     # the FSC adiabatic table has no entries at sweep_angle=0 yet, so
     # extrapolation in the sweep dimension is unreliable). The crossflow
-    # shooting variable wp(0) gets a sensible default since w decouples.
+    # shooting variable gcf_p(0) gets a sensible default since crossflow decouples.
     if key_values.get("sweep_angle", None) == 0.0:
         from simbl.solver.falkner_skan.initial_guess import (
             _TABLE_CONFIGS as _FS_TABLE_CONFIGS,
@@ -184,9 +187,10 @@ def get_initial_guess(
         # FS keys are a subset of FSC keys (no sweep_angle)
         fs_key_values = {k: v for k, v in key_values.items() if k != "sweep_angle"}
         # FS predict returns [fpp_wall, g_wall] (adiabatic) or [fpp_wall, gp_wall] (isothermal)
+        # where g_wall = tau_wall = T_wall/T_edge
         fs_guess = fs_lookup.predict(fs_key_values)
-        # build the 3-element FSC guess: [fpp_wall, wp_wall, g_var]
-        # default wp_wall = 0.5 (consistent with low-sweep typical values)
+        # build the 3-element FSC guess: [fpp_wall, gcfp_wall, g_var/gp_var]
+        # default gcfp_wall = 0.5 (consistent with low-sweep typical values)
         return np.array([fs_guess[0], 0.5, fs_guess[1]])
 
     # predict shooting variables for this query point

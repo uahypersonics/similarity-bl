@@ -1,9 +1,0 @@
-{
-  "metadata": {
-    "version": "3.0",
-    "key_fields": ["mach", "beta", "sweep_angle"],
-    "value_fields": ["fpp_wall", "wp_wall", "g_wall"],
-    "entries_count": 0
-  },
-  "entries": []
-}

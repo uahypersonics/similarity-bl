@@ -55,9 +55,9 @@ def _write_tecplot(
     # --------------------------------------------------
     # compute scaled wall-normal velocity and density ratio for output
     #
-    # rho/rho_e = 1/g(eta)
+    # rho/rho_e = 1/tau(eta)
     # - ideal gas at constant pressure: p = rho*R*T = const
-    # - so rho/rho_e = T_e/T = 1/g(eta)
+    # - so rho/rho_e = T_e/T = 1/tau(eta)
     #
     # (v/u_e)*sqrt(Re_x) = 0.5*(eta*f' - f)
     # - from integrating the continuity equation in similarity space
@@ -66,7 +66,12 @@ def _write_tecplot(
     # - result is purely a function of the similarity profiles f and f'
     # --------------------------------------------------
     v_ue_sqrtRex = 0.5 * (solution.eta * solution.fp - solution.f)
-    rho_rhoe = 1.0 / solution.g
+
+    # Handle both old (g) and new (tau) naming for temperature
+    if hasattr(solution, 'tau'):
+        rho_rhoe = 1.0 / solution.tau
+    else:
+        rho_rhoe = 1.0 / solution.g
 
     # --------------------------------------------------
     # header information for Tecplot file: title, variable names, auxiliary data
@@ -93,8 +98,9 @@ def _write_tecplot(
             zone_name = "solution"
 
     # variable list: w_we appended for FSC solutions
+    # Support both old (w) and new (g_cf) naming for crossflow
     variables = ["eta", "u_ue", "T_Te", "rho_rhoe", "v_ue_sqrtRex"]
-    if hasattr(solution, "w"):
+    if hasattr(solution, "g_cf") or hasattr(solution, "w"):
         variables += ["w_we"]
 
     # --------------------------------------------------
@@ -121,9 +127,18 @@ def _write_tecplot(
 
         # auxiliary data: wall values from solution
         f.write(f'AUXDATA fpp_wall = "{solution.fpp[0]}"\n')
-        f.write(f'AUXDATA gp_wall = "{solution.gp[0]}"\n')
-        f.write(f'AUXDATA g_wall = "{solution.g[0]}"\n')
-        if hasattr(solution, "wp"):
+
+        # Handle both old and new naming
+        if hasattr(solution, 'tau_p'):
+            f.write(f'AUXDATA taup_wall = "{solution.tau_p[0]}"\n')
+            f.write(f'AUXDATA tau_wall = "{solution.tau[0]}"\n')
+        else:
+            f.write(f'AUXDATA gp_wall = "{solution.gp[0]}"\n')
+            f.write(f'AUXDATA g_wall = "{solution.g[0]}"\n')
+
+        if hasattr(solution, "gcf_p"):
+            f.write(f'AUXDATA gcfp_wall = "{solution.gcf_p[0]}"\n')
+        elif hasattr(solution, "wp"):
             f.write(f'AUXDATA wp_wall = "{solution.wp[0]}"\n')
 
         # auxiliary data: convergence info (if provided)
@@ -140,29 +155,39 @@ def _write_tecplot(
         # u/u_e = f'(eta)
         # - by definition of the stream function: u = u_e * f'(eta)
         #
-        # T/T_e = g(eta)
-        # - by definition of the energy variable: g = T/T_e
+        # T/T_e = tau(eta) or g(eta)
+        # - by definition of the energy variable: tau = T/T_e (new) or g = T/T_e (old)
         #
-        # rho/rho_e = 1/g(eta)
+        # rho/rho_e = 1/tau(eta) or 1/g(eta)
         # - precomputed above, stored in rho_rhoe
         #
         # (v/u_e)*sqrt(Re_x) = 0.5*(eta*f' - f)
         # - precomputed above from continuity equation, stored in v_ue_sqrtRex
         #
-        # w/w_e = w(eta)
+        # w/w_e = g_cf(eta) or w(eta)
         # - Falkner-Skan-Cooke only
         # --------------------------------------------------
+
+        # Get temperature array (support both old and new naming)
+        temp_ratio = solution.tau if hasattr(solution, 'tau') else solution.g
+
+        # Get crossflow array (support both old and new naming)
+        crossflow = None
+        if hasattr(solution, 'g_cf'):
+            crossflow = solution.g_cf
+        elif hasattr(solution, 'w'):
+            crossflow = solution.w
 
         for i in range(len(solution.eta)):
             row = (
                 f"{solution.eta[i]:18.10E} "
                 f"{solution.fp[i]:18.10E} "
-                f"{solution.g[i]:18.10E} "
+                f"{temp_ratio[i]:18.10E} "
                 f"{rho_rhoe[i]:18.10E} "
                 f"{v_ue_sqrtRex[i]:18.10E} "
             )
-            if hasattr(solution, "wp"):
-                row += f"{solution.w[i]:18.10E} "
+            if crossflow is not None:
+                row += f"{crossflow[i]:18.10E} "
             row = row.rstrip() + "\n"
             f.write(row)
 

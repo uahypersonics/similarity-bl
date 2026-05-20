@@ -2,6 +2,9 @@
 
 Constructs a SolverProblem for the 3D compressible Falkner-Skan-Cooke model
 (7-equation ODE, 3 shooting variables).
+
+Implements Liu (2021), Phys. Fluids 33, 126109, Eqs. 16-18.
+State vector: [f, fp, fpp, g_cf, gcf_p, tau, tau_p]
 """
 
 from __future__ import annotations
@@ -47,9 +50,9 @@ def build_solver_problem(
     initial_fpp : float, optional
         Override initial guess for f''(0).
     initial_wp : float, optional
-        Override initial guess for w'(0).
+        Override initial guess for g_cf'(0) (crossflow velocity gradient at wall).
     initial_gvar : float, optional
-        Override initial guess for g'(0) (isothermal) or g(0) (adiabatic).
+        Override initial guess for tau'(0) (isothermal) or tau(0) (adiabatic).
 
     Returns
     -------
@@ -83,32 +86,35 @@ def build_solver_problem(
             guess[2] = initial_gvar
 
     # --------------------------------------------------
-    # ODE setup: bind problem, visc_model, and tan^2(sweep) into a two argument function for solve_ivp
+    # ODE setup: bind problem and visc_model into a two argument function for solve_ivp
     # --------------------------------------------------
-    sweep_rad = np.radians(problem.sweep_angle)
-    tan2_sweep = np.tan(sweep_rad) ** 2
-
     def ode_func(eta: float, y: NDArray[np.float64]) -> NDArray[np.float64]:
-        return bl_ode(eta, y, problem, visc_model, tan2_sweep)
+        return bl_ode(eta, y, problem, visc_model)
 
     # --------------------------------------------------
-    # initial condition builder (3 shooting variables -> 7-element y0)
+    # Initial condition builder (3 shooting variables -> 7-element y0)
+    # State vector: [f, fp, fpp, g_cf, gcf_p, tau, tau_p]
+    # Note: problem.g_wall = T_wall/T_edge is passed as tau_wall to build_y0
     # --------------------------------------------------
     def build_initial_condition(s: NDArray[np.float64]) -> NDArray[np.float64]:
-        return build_y0(wall_bc=problem.wall_bc, g_wall=problem.g_wall, shooting_vars=s)
+        return build_y0(wall_bc=problem.wall_bc, tau_wall=problem.g_wall, shooting_vars=s)
 
     # --------------------------------------------------
-    # residual function: f'(inf) = 1, w(inf) = w_e_normalized, g(inf) = 1
-    # for aligned flow (sweep_angle = 0), w_e = 0 so w(inf) = 0
-    # for swept flow (sweep_angle > 0), w is normalized by edge crossflow so w(inf) = 1
+    # Residual function for boundary conditions at eta -> infinity:
+    #   fp(inf) = 1     (streamwise velocity reaches edge value)
+    #   g_cf(inf) = g_cf_edge_target
+    #   tau(inf) = 1    (temperature reaches edge value)
+    #
+    # For aligned flow (sweep_angle = 0), w_e = 0 so g_cf(inf) = 0
+    # For swept flow (sweep_angle > 0), g_cf = w/w_e is normalized by edge crossflow so g_cf(inf) = 1
     # --------------------------------------------------
-    w_edge_target = 0.0 if problem.sweep_angle == 0.0 else 1.0
+    gcf_edge_target = 0.0 if problem.sweep_angle == 0.0 else 1.0
 
     def residual(y_edge: NDArray[np.float64]) -> NDArray[np.float64]:
         return np.array([
-            y_edge[1] - 1.0,         # f'(inf) - 1
-            y_edge[3] - w_edge_target,  # w(inf) - w_edge_target
-            y_edge[5] - 1.0,         # g(inf) - 1
+            y_edge[1] - 1.0,              # fp(inf) - 1
+            y_edge[3] - gcf_edge_target,  # g_cf(inf) - g_cf_edge_target
+            y_edge[5] - 1.0,              # tau(inf) - 1
         ])
 
     # --------------------------------------------------

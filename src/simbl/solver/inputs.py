@@ -39,9 +39,11 @@ class SimilarityInputs:
     gamma : float, optional
         Specific heat ratio. Default 1.4 (air).
     beta : float, optional
-        Falkner-Skan pressure gradient parameter. Default 0.0 (flat plate).
+        Hartree pressure gradient parameter beta = 2m/(m+1). Default 0.0 (flat plate).
     sweep_angle : float, optional
         Sweep angle [deg] for Falkner-Skan-Cooke problems. Default 0.0 (2D).
+    xi_over_xi_ref : float, optional
+        Local station ratio xi/xi_ref for Liu Eq. 23. Default 1.0 (local solution).
     viscosity_model : str, optional
         Transport model for dynamic viscosity. Default "sutherland".
 
@@ -83,8 +85,9 @@ class SimilarityInputs:
     gamma: float = 1.4
 
     # flow configuration
-    beta: float = 0.0  # Falkner-Skan pressure gradient parameter
+    beta: float = 0.0  # Hartree pressure gradient parameter: beta = 2m/(m+1)
     sweep_angle: float = 0.0  # sweep angle [deg] for FSC problems
+    xi_over_xi_ref: float = 1.0  # local station ratio xi/xi_ref for Liu Eq. 23
 
     # transport model
     viscosity_model: str = "sutherland"
@@ -127,6 +130,8 @@ class SimilarityInputs:
             raise ValueError(
                 f"sweep_angle must be in [0, 90): {self.sweep_angle}"
             )
+        if self.xi_over_xi_ref <= 0:
+            raise ValueError(f"xi_over_xi_ref must be positive: {self.xi_over_xi_ref}")
 
         # --------------------------------------------------
         # compute derived quantities
