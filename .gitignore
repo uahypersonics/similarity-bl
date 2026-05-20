@@ -5,7 +5,7 @@
 archive/
 
 # examples (work in progress, not ready for public docs)
-examples/
+examples-private/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -225,3 +225,7 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+sandbox
+references
+debug
