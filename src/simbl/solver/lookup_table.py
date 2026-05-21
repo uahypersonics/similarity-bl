@@ -165,9 +165,18 @@ class LookupTable:
         # value_fields = ["fpp_wall", "g_wall"]
         # points = [[4.0, 0.0], ...]
         # values = [[0.615, 3.69], ...]
+        #
+        # entries missing any required field (e.g. from an old cache version) are skipped
+        required_fields = set(self.key_fields) | set(self.value_fields)
         for e in self._entries:
+            if not required_fields.issubset(e.keys()):
+                continue
             points.append([e[k] for k in self.key_fields])
             values.append([e[v] for v in self.value_fields])
+
+        # all entries were stale — leave arrays empty, predict() falls back to default_values
+        if not points:
+            return
 
         # convert to numpy arrays (double precision for interpolation)
         self._points = np.array(points, dtype=np.float64)
@@ -195,9 +204,9 @@ class LookupTable:
             Predicted shooting variable values
         """
 
-        # if no _entries loaded in the LookupTable instance, return default values
+        # if no usable entries are loaded, return default values
         # note: default_values are stored in the _TABLE_CONFIGS dictionaries for falkner_skan and falkner_skan_cooke (see initial_guess.py)
-        if len(self._entries) == 0:
+        if len(self._points) == 0:
             return self.default_values.copy()
 
         # build query point (unknown point, where to interpolate to) from key fields
