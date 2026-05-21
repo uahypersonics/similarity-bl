@@ -172,6 +172,7 @@ def test_energy_equation_uses_S_and_K():
     """
     # Read the source code to verify S and K are computed
     import inspect
+
     from simbl.solver.falkner_skan_cooke.ode import bl_ode
 
     source = inspect.getsource(bl_ode)
