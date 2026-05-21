@@ -15,7 +15,12 @@ import sys
 from pathlib import Path
 from typing import Annotated
 
-import typer
+try:
+    import typer
+except ImportError as exc:  # pragma: no cover
+    raise ImportError(
+        "The simbl CLI requires typer. Install it with: pip install similarity-bl[cli]"
+    ) from exc
 
 # --------------------------------------------------
 # default file names
