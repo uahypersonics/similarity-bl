@@ -6,7 +6,7 @@
 site_name: simbl
 site_url: https://uahypersonics.github.io/similarity-bl
 site_author: Christoph Hader
-site_description: Compressible similarity boundary layer solver with Lees-Dorodnitsyn transformation.
+site_description: Compressible similarity boundary layer solver
 
 # --------------------------------------------------
 # github repository
@@ -96,3 +96,7 @@ extra_javascript:
 nav:
   - Home: index.md
   - Installation: installation.md
+  - User Guide: user_guide.md
+  - Compressible Boundary Layer Equations: compressible_boundary_layer_equations.md
+  - Falkner-Skan Boundary Layer: falkner_skan_boundary_layer.md
+  - Falkner-Skan-Cooke Boundary Layer: falkner_skan_cooke_boundary_layer.md
