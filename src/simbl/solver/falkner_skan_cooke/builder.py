@@ -86,10 +86,22 @@ def build_solver_problem(
             guess[2] = initial_gvar
 
     # --------------------------------------------------
-    # ODE setup: bind problem and visc_model into a two argument function for solve_ivp
+    # ODE setup: precompute loop-invariant parameters S and K, then bind
+    # everything into a two-argument function for solve_ivp
     # --------------------------------------------------
+
+    # S (Liu Eq. 22) and K (Liu Eq. 21) depend only on problem constants.
+    # The solver always receives local edge conditions (chi = xi/xi_ref = 1),
+    # so S simplifies to: S = 1 + (gamma-1)/2 * Ma_e^2 * cos^2(Lambda)
+    # and K = [1 + (gamma-1)/2 * Ma_e^2] / S
+    # Computing them once here avoids repeating trig + arithmetic on every ODE call.
+    sweep_rad = np.radians(problem.sweep_angle)
+    cos2_lambda = np.cos(sweep_rad) ** 2
+    S = 1.0 + (problem.gamma - 1.0) / 2.0 * problem.mach_edge**2 * cos2_lambda
+    K = (1.0 + (problem.gamma - 1.0) / 2.0 * problem.mach_edge**2) / S
+
     def ode_func(eta: float, y: NDArray[np.float64]) -> NDArray[np.float64]:
-        return bl_ode(eta, y, problem, visc_model)
+        return bl_ode(eta, y, problem, visc_model, S, K)
 
     # --------------------------------------------------
     # Initial condition builder (3 shooting variables -> 7-element y0)

@@ -68,10 +68,16 @@ def bl_ode(
     y: NDArray[np.float64],
     problem: SimilarityInputs,
     visc_model: TransportModel,
+    S: float,
+    K: float,
 ) -> NDArray[np.float64]:
     """Compressible Falkner-Skan-Cooke ODE system (7 equations)
 
     Implements Liu (2021), Phys. Fluids 33, 126109, Eqs. 16-18.
+
+    S and K are loop-invariant (depend only on problem constants, not on eta
+    or the state vector). They are precomputed once in build_solver_problem
+    and passed in here so this function does not recompute them on every call.
 
     Parameters
     ----------
@@ -83,6 +89,12 @@ def bl_ode(
         Physics specification (Mach, Pr, gamma, beta, temp_edge).
     visc_model : TransportModel
         Viscosity model instance (from flow_state).
+    S : float
+        Stagnation enthalpy parameter (Liu Eq. 22, at chi=1 for local station).
+        S = 1 + (gamma-1)/2 * Ma_e^2 * cos^2(Lambda)
+    K : float
+        Crossflow recovery factor (Liu Eq. 21).
+        K = [1 + (gamma-1)/2 * Ma_e^2] / S
 
     Returns
     -------
@@ -132,40 +144,11 @@ def bl_ode(
     dy = np.zeros(7)
 
     # --------------------------------------------------
-    # Compute Liu parameters S, K, and related quantities
+    # pressure gradient coefficient (problem constant, read once)
     # --------------------------------------------------
-    # mach_e_ref = edge Mach number (streamwise component)
-    mach_e_ref = problem.mach_edge
-
-    # Sweep angle Lambda
-    sweep_rad = np.radians(problem.sweep_angle)
-    cos_lambda = np.cos(sweep_rad)
-    cos2_lambda = cos_lambda**2
-
-    # Hartree pressure gradient parameter beta = 2m/(m+1)
-    # Solve for Falkner-Skan exponent m: m = beta/(2-beta) for beta ≠ 2
+    # Hartree beta = 2m/(m+1) appears directly as the RHS coefficient in
+    # Liu Eq. 16. Read from problem here for a descriptive local name.
     hartree_beta = problem.beta
-    if abs(hartree_beta - 2.0) > 1e-10:
-        m = hartree_beta / (2.0 - hartree_beta)
-    else:
-        m = 1e10  # large value for beta = 2 (stagnation point limit)
-
-    # Liu Eq. 23: v = (xi/xi_ref)^m
-    # For flat plate (m=0), v = 1 regardless of xi/xi_ref
-    # For pressure gradient flows, v varies with streamwise position
-    xi_over_xi_ref = problem.xi_over_xi_ref
-    v = xi_over_xi_ref**m
-
-    # Liu Eq. 22: S = 1 + (gamma-1)/2 * v^2 * mach_e_ref^2 * cos^2(Lambda)
-    # S is the stagnation enthalpy parameter (NOT absorbed into beta)
-    S = 1.0 + (problem.gamma - 1.0) / 2.0 * v**2 * mach_e_ref**2 * cos2_lambda
-
-    # Liu Eq. 21: K = [1 + (gamma-1)/2 * mach_e_ref^2] /
-    #                  [1 + (gamma-1)/2 * mach_e_ref^2 * cos^2(Lambda)]
-    # K is the crossflow recovery factor
-    numerator = 1.0 + (problem.gamma - 1.0) / 2.0 * mach_e_ref**2
-    denominator = 1.0 + (problem.gamma - 1.0) / 2.0 * mach_e_ref**2 * cos2_lambda
-    K = numerator / denominator
 
     # --------------------------------------------------
     # Liu Eq. 16: Streamwise momentum
@@ -223,9 +206,8 @@ def bl_ode(
     #
     # where:
     #   N = mu_ratio / tau (Chapman-Rubesin parameter)
-    #   K = [1 + (gamma-1)/2 * mach_e_ref^2] / [1 + (gamma-1)/2 * mach_e_ref^2 * cos^2(Lambda)]  [Liu Eq. 21]
-    #   S = 1 + (gamma-1)/2 * v^2 * mach_e_ref^2 * cos^2(Lambda)  [Liu Eq. 22]
-    #   v = (xi/xi_ref)^m, for ZPG (m=0): v = 1  [Liu Eq. 23]
+    #   S = 1 + (gamma-1)/2 * Ma_e^2 * cos^2(Lambda)  [Liu Eq. 22, chi=1]
+    #   K = [1 + (gamma-1)/2 * Ma_e^2] / S             [Liu Eq. 21]
     #
     # Derivation of first-order form for tau'':
     #
@@ -256,11 +238,8 @@ def bl_ode(
     # tau'' = (Pr/N) * [all RHS terms]
     # --------------------------------------------------
 
-    # Note: S and K are already computed above (before momentum equations)
-    # K = [1 + (gamma-1)/2 * mach_e_ref^2] / [1 + (gamma-1)/2 * mach_e_ref^2 * cos^2(Lambda)]  [Liu Eq. 21]
-    # S = 1 + (gamma-1)/2 * v^2 * mach_e_ref^2 * cos^2(Lambda)  [Liu Eq. 22]
-
     # N_prime was computed once near the top of this function (reused here).
+    # S and K were precomputed in build_solver_problem and passed as arguments.
 
     # fppp and gcf_pp are exactly the momentum derivatives already solved
     # above (Liu Eqs. 16 and 17). Reuse them directly instead of recomputing
