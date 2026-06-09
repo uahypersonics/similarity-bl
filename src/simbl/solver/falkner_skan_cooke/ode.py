@@ -112,13 +112,13 @@ def bl_ode(
     # --------------------------------------------------
     # Compute Liu parameters S, K, and related quantities
     # --------------------------------------------------
-    # Ma_e_ref = edge Mach number (streamwise component)
-    Ma_e_ref = problem.mach_edge
+    # mach_e_ref = edge Mach number (streamwise component)
+    mach_e_ref = problem.mach_edge
 
     # Sweep angle Lambda
     sweep_rad = np.radians(problem.sweep_angle)
-    cos_Lambda = np.cos(sweep_rad)
-    cos2_Lambda = cos_Lambda**2
+    cos_lambda = np.cos(sweep_rad)
+    cos2_lambda = cos_lambda**2
 
     # Hartree pressure gradient parameter beta = 2m/(m+1)
     # Solve for Falkner-Skan exponent m: m = beta/(2-beta) for beta ≠ 2
@@ -134,32 +134,32 @@ def bl_ode(
     xi_over_xi_ref = problem.xi_over_xi_ref
     v = xi_over_xi_ref**m
 
-    # Liu Eq. 22: S = 1 + (gamma-1)/2 * v^2 * Ma_e_ref^2 * cos^2(Lambda)
+    # Liu Eq. 22: S = 1 + (gamma-1)/2 * v^2 * mach_e_ref^2 * cos^2(Lambda)
     # S is the stagnation enthalpy parameter (NOT absorbed into beta)
-    S = 1.0 + (problem.gamma - 1.0) / 2.0 * v**2 * Ma_e_ref**2 * cos2_Lambda
+    S = 1.0 + (problem.gamma - 1.0) / 2.0 * v**2 * mach_e_ref**2 * cos2_lambda
 
-    # Liu Eq. 21: K = [1 + (gamma-1)/2 * Ma_e_ref^2] /
-    #                  [1 + (gamma-1)/2 * Ma_e_ref^2 * cos^2(Lambda)]
+    # Liu Eq. 21: K = [1 + (gamma-1)/2 * mach_e_ref^2] /
+    #                  [1 + (gamma-1)/2 * mach_e_ref^2 * cos^2(Lambda)]
     # K is the crossflow recovery factor
-    numerator = 1.0 + (problem.gamma - 1.0) / 2.0 * Ma_e_ref**2
-    denominator = 1.0 + (problem.gamma - 1.0) / 2.0 * Ma_e_ref**2 * cos2_Lambda
+    numerator = 1.0 + (problem.gamma - 1.0) / 2.0 * mach_e_ref**2
+    denominator = 1.0 + (problem.gamma - 1.0) / 2.0 * mach_e_ref**2 * cos2_lambda
     K = numerator / denominator
 
     # --------------------------------------------------
     # Liu Eq. 16: Streamwise momentum
-    # (N f'')' + f f'' = beta * S * (fp^2 - tau)
+    # (N f'')' + f f'' = (beta / S) * (fp^2 - tau)
     #
     # where:
     #   beta = 2m/(m+1) is the Hartree pressure gradient parameter
     #   S is the stagnation enthalpy parameter (Liu Eq. 22)
-    #   beta and S appear as separate factors (S is NOT absorbed into beta)
+    #   Liu Eq. 16 RHS is 2m/[(m+1) S] = beta / S (S appears in the denominator)
     #
     # Expanding (N f'')' = N f''' + N' f''
     # where N' = tau' (dmu_dT - mu_ratio/tau) / tau
     #
     # Therefore:
-    # N f''' = -f f'' + beta * S * (fp^2 - tau) - N' f''
-    # f''' = (tau/mu_ratio) [-f f'' + beta * S * (fp^2 - tau)
+    # N f''' = -f f'' + (beta / S) * (fp^2 - tau) - N' f''
+    # f''' = (tau/mu_ratio) [-f f'' + (beta / S) * (fp^2 - tau)
     #                        + f'' tau' (mu_ratio/tau - dmu_dT) / tau]
     # --------------------------------------------------
     dy[0] = fp
@@ -171,7 +171,7 @@ def bl_ode(
 
     dy[2] = (tau / mu_ratio) * (
         -f * fpp
-        + hartree_beta * S * (fp**2 - tau)
+        + hartree_beta / S * (fp**2 - tau)
         + fpp * tau_p * (mu_ratio / tau - dmu_dT) / tau
     )
 
@@ -197,8 +197,8 @@ def bl_ode(
     #
     # where:
     #   N = mu_ratio / tau (Chapman-Rubesin parameter)
-    #   K = [1 + (gamma-1)/2 * Ma_e_ref^2] / [1 + (gamma-1)/2 * Ma_e_ref^2 * cos^2(Lambda)]  [Liu Eq. 21]
-    #   S = 1 + (gamma-1)/2 * v^2 * Ma_e_ref^2 * cos^2(Lambda)  [Liu Eq. 22]
+    #   K = [1 + (gamma-1)/2 * mach_e_ref^2] / [1 + (gamma-1)/2 * mach_e_ref^2 * cos^2(Lambda)]  [Liu Eq. 21]
+    #   S = 1 + (gamma-1)/2 * v^2 * mach_e_ref^2 * cos^2(Lambda)  [Liu Eq. 22]
     #   v = (xi/xi_ref)^m, for ZPG (m=0): v = 1  [Liu Eq. 23]
     #
     # Derivation of first-order form for tau'':
@@ -231,17 +231,17 @@ def bl_ode(
     # --------------------------------------------------
 
     # Note: S and K are already computed above (before momentum equations)
-    # K = [1 + (gamma-1)/2 * Ma_e_ref^2] / [1 + (gamma-1)/2 * Ma_e_ref^2 * cos^2(Lambda)]  [Liu Eq. 21]
-    # S = 1 + (gamma-1)/2 * v^2 * Ma_e_ref^2 * cos^2(Lambda)  [Liu Eq. 22]
+    # K = [1 + (gamma-1)/2 * mach_e_ref^2] / [1 + (gamma-1)/2 * mach_e_ref^2 * cos^2(Lambda)]  [Liu Eq. 21]
+    # S = 1 + (gamma-1)/2 * v^2 * mach_e_ref^2 * cos^2(Lambda)  [Liu Eq. 22]
 
     # N' = d/deta(mu_ratio/tau) = tau' (dmu_dT - mu_ratio/tau) / tau
     N_prime = tau_p * (dmu_dT - mu_ratio / tau) / tau
 
     # Compute fppp and gcf_pp from momentum equations (Liu Eqs. 16 and 17)
-    # fppp = RHS of Liu Eq. 16 with hartree_beta * S factor
+    # fppp = RHS of Liu Eq. 16 with hartree_beta / S factor
     fppp = (tau / mu_ratio) * (
         -f * fpp
-        + hartree_beta * S * (fp**2 - tau)
+        + hartree_beta / S * (fp**2 - tau)
         + fpp * tau_p * (mu_ratio / tau - dmu_dT) / tau
     )
 
