@@ -242,32 +242,32 @@ def bl_ode(
     # S and K were precomputed in build_solver_problem and passed as arguments.
 
     # fppp and gcf_pp are exactly the momentum derivatives already solved
-    # above (Liu Eqs. 16 and 17). Reuse them directly instead of recomputing
-    # so the two copies can never drift out of sync.
+    # above (Liu Eqs. 16 and 17). Reuse them directly instead of recomputing.
     fppp = dy[2]
     gcf_pp = dy[4]
 
-    # Compute derivatives of kinetic energy terms
+    # Compute derivatives (f'^2)' and (g_cf^2)'
+    # chain rule: (fp^2)' = 2 fp fpp and (g_cf^2)' = 2 g_cf gcf_p
     fp2_prime = 2.0 * fp * fpp
     gcf2_prime = 2.0 * g_cf * gcf_p
 
     dy[5] = tau_p
 
-    # Term 1: -(N'/Pr) tau'
+    # term 1: -(N'/Pr) tau'
     term1 = -(N_prime / problem.prandtl) * tau_p
 
-    # Term 2: -(S - 1) [N' * 2 fp fpp + N * 2 (fpp^2 + fp fppp)]
+    # term 2: -(S - 1) [N' * 2 fp fpp + N * 2 (fpp^2 + fp fppp)]
     term2_bracket = N_prime * fp2_prime + N * 2.0 * (fpp**2 + fp * fppp)
     term2 = -(S - 1.0) * term2_bracket
 
-    # Term 3: -(K - 1) S [N' * 2 g_cf gcf_p + N * 2 (gcf_p^2 + g_cf gcf_pp)]
+    # term 3: -(K - 1) S [N' * 2 g_cf gcf_p + N * 2 (gcf_p^2 + g_cf gcf_pp)]
     term3_bracket = S * (N_prime * gcf2_prime + N * 2.0 * (gcf_p**2 + g_cf * gcf_pp))
     term3 = -(K - 1.0) * term3_bracket
 
-    # Term 4: -f [tau' + (S - 1)(fp^2)' + (K - 1) S (g_cf^2)']
+    # term 4: -f [tau' + (S - 1)(fp^2)' + (K - 1) S (g_cf^2)']
     term4 = -f * (tau_p + (S - 1.0) * fp2_prime + (K - 1.0) * S * gcf2_prime)
 
-    # Solve for tau'': tau'' = (Pr/N) * [sum of all terms]
+    # solve for tau'': tau'' = (Pr/N) * [sum of all terms]
     dy[6] = (problem.prandtl / N) * (term1 + term2 + term3 + term4)
 
     return dy
