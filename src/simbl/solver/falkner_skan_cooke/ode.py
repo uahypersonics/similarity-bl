@@ -27,7 +27,20 @@ Edge conditions:
 Note: Variable naming follows Liu (2021) convention to avoid confusion:
     - g_cf is crossflow velocity (not to be confused with temperature)
     - tau is temperature (not to be confused with shear stress)
-"""
+
+    - N = rho*mu / (rho_e*mu_e) is the Chapman-Rubesin parameter
+    - perfect gas: p = rho R T and p_e = rho_e R T_e
+    - dp/dy = 0 implies p = p_e everywhere in the boundary layer
+    - Therefore: p/p_e = 1 = (rho R T) / (rho_e R T_e) = (rho/rho_e) * (T/T_e) = (rho/rho_e) * tau
+    - rho/rho_e = 1/tau for perfect gas at constant pressure
+    - N = mu/mu_e * rho/rho_e = mu_ratio / tau
+    - N' = d(N)/deta = d/deta(mu_ratio/tau) = (mu_ratio' * tau - mu_ratio * tau') / tau^2
+    - N' = mu_ratio'/tau - mu_ratio * tau' / tau^2
+    - mu_ratio' = d(mu_ratio)/deta = d/deta(mu/mu_e) = (dmu/dT) * (dT/deta) / mu_e
+    - tau = T/T_e => dT/deta = T_e * tau' => mu_ratio' = (dmu/dT) * (T_e * tau') / mu_e
+    - N' = (dmu/dT) * (T_e * tau') / mu_e * (1/tau) - mu_ratio * tau' / tau^2
+    - N' = tau'/tau * [ (dmu/dT) * (T_e / mu_e) - mu_ratio / tau ]
+    """
 
 # --------------------------------------------------
 # load necessary modules
@@ -106,6 +119,15 @@ def bl_ode(
     # --------------------------------------------------
     N = mu_ratio / tau
 
+    # --------------------------------------------------
+    # Derivative of the Chapman-Rubesin parameter: N'
+    # N = mu_ratio / tau depends on eta only through tau, so by the chain /
+    # quotient rule: N' = tau' (dmu_dT - mu_ratio/tau) / tau
+    # Computed here and reused in every equation below (both momentum
+    # equations and the energy equation) so the algebra lives in one place.
+    # --------------------------------------------------
+    N_prime = tau_p * (dmu_dT - mu_ratio / tau) / tau
+
     # Initialize derivatives array
     dy = np.zeros(7)
 
@@ -165,14 +187,15 @@ def bl_ode(
     dy[0] = fp
     dy[1] = fpp
 
-    # N' / N = tau' (dmu_dT - mu_ratio/tau) / (tau * mu_ratio/tau)
-    #        = tau' (dmu_dT - mu_ratio/tau) / mu_ratio
-    # Or equivalently, work with (tau/mu_ratio) factor throughout
+    # Using N' (computed once above): the inline group
+    # fpp * tau' (mu_ratio/tau - dmu_dT)/tau equals -N' fpp,
+    # and tau/mu_ratio = 1/N. So Liu Eq. 16 becomes:
+    # f''' = (1/N) [-f f'' + (beta/S)(fp^2 - tau) - N' f'']
 
-    dy[2] = (tau / mu_ratio) * (
+    dy[2] = (1.0 / N) * (
         -f * fpp
         + hartree_beta / S * (fp**2 - tau)
-        + fpp * tau_p * (mu_ratio / tau - dmu_dT) / tau
+        - N_prime * fpp
     )
 
     # --------------------------------------------------
@@ -185,9 +208,12 @@ def bl_ode(
     # g_cf'' = (1/N) [-f g_cf' - g_cf' tau' (dmu_dT - mu_ratio/tau)/tau]
     # --------------------------------------------------
     dy[3] = gcf_p
-    dy[4] = (tau / mu_ratio) * (
+
+    # Same structure as Liu Eq. 16 but with no pressure-gradient term:
+    # g_cf'' = (1/N) [-f g_cf' - N' g_cf']
+    dy[4] = (1.0 / N) * (
         -f * gcf_p
-        + gcf_p * tau_p * (mu_ratio / tau - dmu_dT) / tau
+        - N_prime * gcf_p
     )
 
     # --------------------------------------------------
@@ -234,21 +260,13 @@ def bl_ode(
     # K = [1 + (gamma-1)/2 * mach_e_ref^2] / [1 + (gamma-1)/2 * mach_e_ref^2 * cos^2(Lambda)]  [Liu Eq. 21]
     # S = 1 + (gamma-1)/2 * v^2 * mach_e_ref^2 * cos^2(Lambda)  [Liu Eq. 22]
 
-    # N' = d/deta(mu_ratio/tau) = tau' (dmu_dT - mu_ratio/tau) / tau
-    N_prime = tau_p * (dmu_dT - mu_ratio / tau) / tau
+    # N_prime was computed once near the top of this function (reused here).
 
-    # Compute fppp and gcf_pp from momentum equations (Liu Eqs. 16 and 17)
-    # fppp = RHS of Liu Eq. 16 with hartree_beta / S factor
-    fppp = (tau / mu_ratio) * (
-        -f * fpp
-        + hartree_beta / S * (fp**2 - tau)
-        + fpp * tau_p * (mu_ratio / tau - dmu_dT) / tau
-    )
-
-    gcf_pp = (tau / mu_ratio) * (
-        -f * gcf_p
-        + gcf_p * tau_p * (mu_ratio / tau - dmu_dT) / tau
-    )
+    # fppp and gcf_pp are exactly the momentum derivatives already solved
+    # above (Liu Eqs. 16 and 17). Reuse them directly instead of recomputing
+    # so the two copies can never drift out of sync.
+    fppp = dy[2]
+    gcf_pp = dy[4]
 
     # Compute derivatives of kinetic energy terms
     fp2_prime = 2.0 * fp * fpp
