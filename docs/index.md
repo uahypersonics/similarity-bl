@@ -1,13 +1,6 @@
 # simbl
 
-`simbl` is a Python package for solving compressible boundary layer similarity equations using the Lees-Dorodnitsyn transformation.
-
-## Features
-
-- **Falkner-Skan solver**: compressible 2D similarity solutions with adiabatic or isothermal wall
-- **Falkner-Skan-Cooke solver**: compressible 3D swept-wing similarity solutions
-- **CLI**: quick solutions from the terminal
-- **API**: scripting and batch solving
+`simbl` is a Python package for solving compressible boundary layer similarity equations.
 
 ## Quick Start
 

@@ -5,7 +5,7 @@ The system of 5 equations in transformed variables:
     fp'  = fpp
     fpp' = (g/mu)[-f*fpp + fpp*gp*(mu/g - dmu/dT)/g + beta*fp^2 - beta*g]
     g'   = gp
-    gp'  = (g/mu)[gp^2*(mu/g - dmu/dT)/g - Pr*f*gp - Pr*mu*(gamma-1)*M^2*fpp^2/g]
+    gp'  = (g/mu)[gp^2*(mu/g - dmu/dT)/g - Pr*f*gp - Pr*mu*(gamma-1)*M^2*fpp^2/g + Pr*(gamma-1)*M^2*beta*g*fp]
 
 Where:
     f   = stream function
@@ -108,6 +108,7 @@ def bl_ode(
         gp**2 * cr_deriv
         - problem.prandtl * f * gp
         - problem.prandtl * mu * (problem.gamma - 1) * problem.mach_edge**2 * fpp**2 / g
+        + problem.prandtl * (problem.gamma - 1) * problem.mach_edge**2 * problem.beta * g * fp
     )
 
     return dy

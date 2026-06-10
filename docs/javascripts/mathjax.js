@@ -3,7 +3,11 @@ window.MathJax = {
     inlineMath: [["\\(", "\\)"]],
     displayMath: [["\\[", "\\]"]],
     processEscapes: true,
-    processEnvironments: true
+    processEnvironments: true,
+    packages: {'[+]': ['cancel']}
+  },
+  loader: {
+    load: ['[tex]/cancel']
   },
   options: {
     ignoreHtmlClass: ".*|",
