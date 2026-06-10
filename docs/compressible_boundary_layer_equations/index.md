@@ -1,4 +1,4 @@
-# Governing Equations
+# Boundary Layer Equations
 
 This section presents the **compressible laminar boundary layer equations** — the
 governing PDEs that result from applying the boundary layer approximation to the

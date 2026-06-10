@@ -97,12 +97,14 @@ nav:
   - Home: index.md
   - Installation: installation.md
   - User Guide: user_guide.md
-  - Governing Equations:
+  - Boundary Layer Equations:
     - compressible_boundary_layer_equations/index.md
     - 2D Boundary Layer: compressible_boundary_layer_equations/2d_equations.md
     - 3D Boundary Layer: compressible_boundary_layer_equations/3d_equations.md
   - Falkner-Skan:
     - falkner_skan/index.md
+    - Derivation: falkner_skan/derivation.md
+    - Reduction of Order: falkner_skan/reduction_of_order.md
   - Falkner-Skan-Cooke:
     - falkner_skan_cooke/index.md
   - Nomenclature: nomenclature.md
