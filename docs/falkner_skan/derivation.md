@@ -1,5 +1,10 @@
 # Derivation
 
+!!! note
+    This derivation uses the Lévy-Lees transformation and assumes $\rho_e\mu_e =
+    \text{const}$. For the more general derivation using the
+    Illingworth-Stewartson transformation, see [Derivation (IS)](derivation_is.md).
+
 Starting from the steady [2D compressible BL equations](../compressible_boundary_layer_equations/2d_equations.md):
 
 $$
