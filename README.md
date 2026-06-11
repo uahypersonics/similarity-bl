@@ -3,6 +3,7 @@
 Compressible similarity boundary layer solver with Falkner-Skan and Falkner-Skan-Cooke support.
 
 [![Test](https://github.com/uahypersonics/similarity-bl/actions/workflows/test.yml/badge.svg)](https://github.com/uahypersonics/similarity-bl/actions/workflows/test.yml)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20648457.svg)](https://doi.org/10.5281/zenodo.20648457)
 [![PyPI](https://img.shields.io/pypi/v/similarity-bl)](https://pypi.org/project/similarity-bl/)
 [![Docs](https://img.shields.io/badge/docs-mkdocs-blue)](https://uahypersonics.github.io/similarity-bl/)
 [![License](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](LICENSE)
