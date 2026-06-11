@@ -1,21 +1,21 @@
 """ODE system for compressible Falkner-Skan similarity equations
 
 The system of 5 equations in transformed variables:
-    f'   = fp
-    fp'  = fpp
-    fpp' = (g/mu)[-f*fpp + fpp*gp*(mu/g - dmu/dT)/g + beta*fp^2 - beta*g]
-    g'   = gp
-    gp'  = (g/mu)[gp^2*(mu/g - dmu/dT)/g - Pr*f*gp - Pr*mu*(gamma-1)*M^2*fpp^2/g + Pr*(gamma-1)*M^2*beta*g*fp]
+    f'     = f_p
+    f_p'   = f_pp
+    f_pp'  = (tau/mu)[-f*f_pp + f_pp*tau_p*(mu/tau - dmu/dT)/tau + beta*f_p^2 - beta*tau]
+    tau'   = tau_p
+    tau_p' = (tau/mu)[tau_p^2*(mu/tau - dmu/dT)/tau - Pr*f*tau_p - Pr*mu*(gamma-1)*M^2*f_pp^2/tau + Pr*(gamma-1)*M^2*beta*tau*f_p]
 
 Where:
-    f   = stream function
-    g   = T/T_e (normalized temperature)
-    eta = similarity coordinate
-    M   = edge Mach number
-    Pr  = Prandtl number
+    f    = stream function
+    tau  = T/T_e (normalized temperature)
+    eta  = similarity coordinate
+    M    = edge Mach number
+    Pr   = Prandtl number
     gamma = specific heat ratio
     beta = pressure gradient parameter
-    mu  = viscosity ratio (mu/mu_e)
+    mu   = viscosity ratio (mu/mu_e)
 """""
 
 # --------------------------------------------------
@@ -51,7 +51,7 @@ def bl_ode(
     eta : float
         Similarity coordinate (independent variable).
     y : NDArray[np.float64]
-        State vector [f, f', f'', g, g'].
+        State vector [f, f', f'', tau, tau'].
     problem : SimilarityInputs
         Physics specification (Mach, Pr, gamma, beta, temp_edge).
     visc_model : TransportModel
@@ -60,14 +60,15 @@ def bl_ode(
     Returns
     -------
     NDArray[np.float64]
-        Derivatives [f', f'', f''', g', g''].
+        Derivatives [f', f'', f''', tau', tau''].
     """
 
     # unpack state vector
-    f, fp, fpp, g, gp = y
+    f, f_p, f_pp, tau, tau_p = y
 
-    # compute dimensional temperature
-    temp = g * problem.temp_edge
+    # compute dimensional temperature (needed for viscosity model)
+    # clamp temperature to a small positive value to survive Newton-Raphson trial steps
+    temp = max(tau * problem.temp_edge, 1.0)
 
     # viscosity from flow_state transport model
     mu_val = visc_model.mu(temp)
@@ -76,39 +77,42 @@ def bl_ode(
 
     # normalized viscosity: mu = mu(T) / mu(T_e)
     mu = mu_val / mu_edge
-    # dmu_dT = T_e / mu_e * (d mu/d T)
-    dmu_dT = problem.temp_edge / mu_edge * dmudt_val
 
-    # coefficient from expanding d/d(eta) of the Chapman-Rubesin parameter C = mu/g
-    # C' = d/deta (mu/g) = (mu/g - dmu/dT) / g * g'
-    # C'/g' = (mu/g - dmu_dT) / g
-    # this term appears repeatedly in the equations, so we compute it once here
-    cr_deriv = (mu / g - dmu_dT) / g
+    # Chapman-Rubesin factor: C = rho*mu/(rho_e*mu_e) = mu/tau for perfect gas
+    C = mu / tau
+
+    # mu'/mu = (T_e/mu_local)*(dmu/dT)*tau'  (chain rule, T = T_e*tau)
+    # precompute T_e/mu_local * dmu/dT (reused in both momentum and energy)
+    visc_term = problem.temp_edge * dmudt_val / mu_val
 
     # initialize derivatives array
     dy = np.zeros(5)
 
     # --------------------------------------------------
     # streamwise momentum
+    # f''' = (tau'/tau)*f'' - (T_e/mu)*(dmu/dT)*tau'*f'' - f*f''/C - beta_H*(tau-f'^2)/C
     # --------------------------------------------------
-    dy[0] = fp
-    dy[1] = fpp
-    dy[2] = (g / mu) * (
-        -f * fpp
-        + fpp * gp * cr_deriv
-        + problem.beta * fp**2
-        - problem.beta * g
+    dy[0] = f_p
+    dy[1] = f_pp
+    dy[2] = (
+        tau_p / tau * f_pp
+        - visc_term * tau_p * f_pp
+        - (f * f_pp + problem.beta * (tau - f_p**2)) / C
     )
 
     # --------------------------------------------------
     # energy
+    # tau'' = tau'^2/tau - (T_e/mu)*(dmu/dT)*tau'^2
+    #       - Pr*f*tau'/C
+    #       - Pr*(gamma-1)*M_e^2*[f''^2 - beta_H*tau*f'/C]
     # --------------------------------------------------
-    dy[3] = gp
-    dy[4] = (g / mu) * (
-        gp**2 * cr_deriv
-        - problem.prandtl * f * gp
-        - problem.prandtl * mu * (problem.gamma - 1) * problem.mach_edge**2 * fpp**2 / g
-        + problem.prandtl * (problem.gamma - 1) * problem.mach_edge**2 * problem.beta * g * fp
+    dy[3] = tau_p
+    dy[4] = (
+        tau_p**2 / tau
+        - visc_term * tau_p**2
+        - problem.prandtl * f * tau_p / C
+        - problem.prandtl * (problem.gamma - 1) * problem.mach_edge**2
+        * (f_pp**2 - problem.beta * tau * f_p / C)
     )
 
     return dy

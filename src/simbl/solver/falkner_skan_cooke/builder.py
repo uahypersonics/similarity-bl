@@ -4,7 +4,7 @@ Constructs a SolverProblem for the 3D compressible Falkner-Skan-Cooke model
 (7-equation ODE, 3 shooting variables).
 
 Implements Liu (2021), Phys. Fluids 33, 126109, Eqs. 16-18.
-State vector: [f, fp, fpp, g_cf, gcf_p, tau, tau_p]
+State vector: [f, f', f'', tau, tau', g, g']
 """
 
 from __future__ import annotations
@@ -105,7 +105,7 @@ def build_solver_problem(
 
     # --------------------------------------------------
     # Initial condition builder (3 shooting variables -> 7-element y0)
-    # State vector: [f, fp, fpp, g_cf, gcf_p, tau, tau_p]
+    # State vector: [f, f', f'', tau, tau', g, g']
     # Note: problem.g_wall = T_wall/T_edge is passed as tau_wall to build_y0
     # --------------------------------------------------
     def build_initial_condition(s: NDArray[np.float64]) -> NDArray[np.float64]:
@@ -124,9 +124,9 @@ def build_solver_problem(
 
     def residual(y_edge: NDArray[np.float64]) -> NDArray[np.float64]:
         return np.array([
-            y_edge[1] - 1.0,              # fp(inf) - 1
-            y_edge[3] - gcf_edge_target,  # g_cf(inf) - g_cf_edge_target
-            y_edge[5] - 1.0,              # tau(inf) - 1
+            y_edge[1] - 1.0,              # f'(inf) - 1
+            y_edge[5] - gcf_edge_target,  # g(inf) - g_edge_target
+            y_edge[3] - 1.0,              # tau(inf) - 1
         ])
 
     # --------------------------------------------------

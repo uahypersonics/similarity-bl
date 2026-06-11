@@ -149,8 +149,8 @@ $$y_1 = f, \quad y_2 = f', \quad y_3 = f'', \quad y_4 = \tau, \quad y_5 = \tau',
 
     $$\begin{aligned}
     y_5' &= \frac{y_5^2}{y_4} - \frac{T_e}{\mu}\frac{d\mu}{dT}\,y_5^2 - \frac{\mathrm{Pr}\,y_1 y_5}{C} \\
-    &\quad - 2\mathrm{Pr}(S-1)\!\left[\left(\frac{T_e}{\mu}\frac{d\mu}{dT}\,y_5 - \frac{y_5}{y_4}\right)y_2 y_3 + y_3^2 + y_2 y_3'\right] \\
-    &\quad - 2\mathrm{Pr}(K-1)S\!\left[\left(\frac{T_e}{\mu}\frac{d\mu}{dT}\,y_5 - \frac{y_5}{y_4}\right)y_6 y_7 + y_7^2 + y_6 y_7'\right] \\
+    &\quad - 2\mathrm{Pr}(S-1)\!\left[\left(\frac{T_e}{\mu}\frac{d\mu}{dT} - \frac{1}{y_4}\right)y_5 y_2 y_3 + y_3^2 + y_2 y_3'\right] \\
+    &\quad - 2\mathrm{Pr}(K-1)S\!\left[\left(\frac{T_e}{\mu}\frac{d\mu}{dT} - \frac{1}{y_4}\right)y_5 y_6 y_7 + y_7^2 + y_6 y_7'\right] \\
     &\quad - \frac{2\mathrm{Pr}\,y_1}{C}\!\left[(S-1)y_2 y_3 + (K-1)S\,y_6 y_7\right]
     \end{aligned}$$
 

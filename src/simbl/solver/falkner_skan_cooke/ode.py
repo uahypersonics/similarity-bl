@@ -4,16 +4,16 @@ Three-dimensional extension of the similarity boundary layer equations
 with crossflow, following Liu (2021), Phys. Fluids 33, 126109.
 
 Implementation of Liu Eqs. 16-18 using state vector:
-    y = [f, fp, fpp, g_cf, gcf_p, tau, tau_p]
+    y = [f, f', f'', tau, tau', g, g']
 
 Where:
-    f     = streamwise stream function
-    fp    = f' = u/u_e (streamwise velocity ratio)
-    fpp   = f'' (streamwise velocity gradient)
-    g_cf  = w/w_e (crossflow velocity ratio)
-    gcf_p = g_cf' (crossflow velocity gradient)
-    tau   = T/T_e (normalized temperature)
-    tau_p = tau' (temperature gradient)
+    f    = streamwise stream function
+    f'   = u/u_e (streamwise velocity ratio)
+    f''  = streamwise velocity gradient
+    tau  = T/T_e (normalized temperature)
+    tau' = temperature gradient
+    g    = w/w_e (crossflow velocity ratio)
+    g'   = crossflow velocity gradient
     eta   = similarity coordinate
 
 Edge conditions:
@@ -25,21 +25,16 @@ Edge conditions:
     mu  = viscosity ratio mu/mu_e
 
 Note: Variable naming follows Liu (2021) convention to avoid confusion:
-    - g_cf is crossflow velocity (not to be confused with temperature)
+    - g is crossflow velocity (not to be confused with temperature)
     - tau is temperature (not to be confused with shear stress)
 
-    - N = rho*mu / (rho_e*mu_e) is the Chapman-Rubesin parameter
+    - C = rho*mu / (rho_e*mu_e) is the Chapman-Rubesin factor
     - perfect gas: p = rho R T and p_e = rho_e R T_e
     - dp/dy = 0 implies p = p_e everywhere in the boundary layer
-    - Therefore: p/p_e = 1 = (rho R T) / (rho_e R T_e) = (rho/rho_e) * (T/T_e) = (rho/rho_e) * tau
-    - rho/rho_e = 1/tau for perfect gas at constant pressure
-    - N = mu/mu_e * rho/rho_e = mu_ratio / tau
-    - N' = d(N)/deta = d/deta(mu_ratio/tau) = (mu_ratio' * tau - mu_ratio * tau') / tau^2
-    - N' = mu_ratio'/tau - mu_ratio * tau' / tau^2
-    - mu_ratio' = d(mu_ratio)/deta = d/deta(mu/mu_e) = (dmu/dT) * (dT/deta) / mu_e
-    - tau = T/T_e => dT/deta = T_e * tau' => mu_ratio' = (dmu/dT) * (T_e * tau') / mu_e
-    - N' = (dmu/dT) * (T_e * tau') / mu_e * (1/tau) - mu_ratio * tau' / tau^2
-    - N' = tau'/tau * [ (dmu/dT) * (T_e / mu_e) - mu_ratio / tau ]
+    - Therefore: rho/rho_e = 1/tau for perfect gas at constant pressure
+    - C = mu/mu_e * rho/rho_e = mu/tau  (where mu = mu_local/mu_e)
+    - mu'/mu = (T_e/mu_local)(dmu/dT) * tau'  (chain rule via T = T_e*tau)
+    - precomputed as visc_term = dmu_dT/mu = T_e/mu_local * dmu/dT
     """
 
 # --------------------------------------------------
@@ -84,7 +79,7 @@ def bl_ode(
     eta : float
         Similarity coordinate (independent variable).
     y : NDArray[np.float64]
-        State vector [f, fp, fpp, g_cf, gcf_p, tau, tau_p].
+        State vector [f, f', f'', tau, tau', g, g'].
     problem : SimilarityInputs
         Physics specification (Mach, Pr, gamma, beta, temp_edge).
     visc_model : TransportModel
@@ -99,175 +94,92 @@ def bl_ode(
     Returns
     -------
     NDArray[np.float64]
-        Derivatives [f', f'', f''', g_cf', g_cf'', tau', tau''].
+        Derivatives [f', f'', f''', g', g'', tau', tau''].
     """
-    # --------------------------------------------------
-    # Unpack state vector
-    # --------------------------------------------------
-    f, fp, fpp, g_cf, gcf_p, tau, tau_p = y
 
-    # --------------------------------------------------
-    # Compute viscosity properties
-    # --------------------------------------------------
-    # Clamp temperature to a small positive value to survive Newton-Raphson trial steps;
-    # intermediate shooting variables can produce unphysical tau during iteration
-    # and the viscosity model raises ValueError on non-positive temperatures
+    # unpack state vector
+    f, f_p, f_pp, tau, tau_p, g, g_p = y
+
+    # compute dimensional temperature (needed for viscosity model)
+    # clamp temperature to a small positive value to survive Newton-Raphson trial steps
     temp = max(tau * problem.temp_edge, 1.0)
 
-    # Viscosity from flow_state transport model
+    # viscosity from flow_state transport model
     mu_val = visc_model.mu(temp)
     mu_edge = visc_model.mu(problem.temp_edge)
     dmudt_val = visc_model.dmudt(temp)
 
-    # Normalized viscosity: mu_ratio = mu(T) / mu(T_e)
-    mu_ratio = mu_val / mu_edge
-    # dmu_dT = T_e / mu_e * (d mu/d T)
-    dmu_dT = problem.temp_edge / mu_edge * dmudt_val
+    # normalized viscosity: mu = mu(T) / mu(T_e)
+    mu = mu_val / mu_edge
 
-    # --------------------------------------------------
-    # Chapman-Rubesin parameter: N = rho*mu / (rho_e*mu_e)
-    # For perfect gas at constant pressure: rho/rho_e = 1/tau
-    # Therefore: N = mu_ratio / tau
-    # --------------------------------------------------
-    N = mu_ratio / tau
+    # Chapman-Rubesin factor: C = rho*mu/(rho_e*mu_e) = mu/tau for perfect gas
+    C = mu / tau
 
-    # --------------------------------------------------
-    # Derivative of the Chapman-Rubesin parameter: N'
-    # N = mu_ratio / tau depends on eta only through tau, so by the chain /
-    # quotient rule: N' = tau' (dmu_dT - mu_ratio/tau) / tau
-    # Computed here and reused in every equation below (both momentum
-    # equations and the energy equation) so the algebra lives in one place.
-    # --------------------------------------------------
-    N_prime = tau_p * (dmu_dT - mu_ratio / tau) / tau
+    # mu'/mu = (T_e/mu_local)*(dmu/dT)*tau'  (chain rule, T = T_e*tau)
+    # precompute T_e/mu_local * dmu/dT (reused in all three equations)
+    visc_term = problem.temp_edge * dmudt_val / mu_val
 
     # Initialize derivatives array
     dy = np.zeros(7)
 
     # --------------------------------------------------
-    # pressure gradient coefficient (problem constant, read once)
-    # --------------------------------------------------
-    # Hartree beta = 2m/(m+1) appears directly as the RHS coefficient in
-    # Liu Eq. 16. Read from problem here for a descriptive local name.
-    hartree_beta = problem.beta
-
-    # --------------------------------------------------
-    # Liu Eq. 16: Streamwise momentum
-    # (N f'')' + f f'' = (beta / S) * (fp^2 - tau)
+    # x-momentum (Liu Eq. 16)
+    # (C f'')' + f f'' + beta_H*(tau - f'^2) = 0
     #
-    # where:
-    #   beta = 2m/(m+1) is the Hartree pressure gradient parameter
-    #   S is the stagnation enthalpy parameter (Liu Eq. 22)
-    #   Liu Eq. 16 RHS is 2m/[(m+1) S] = beta / S (S appears in the denominator)
-    #
-    # Expanding (N f'')' = N f''' + N' f''
-    # where N' = tau' (dmu_dT - mu_ratio/tau) / tau
-    #
-    # Therefore:
-    # N f''' = -f f'' + (beta / S) * (fp^2 - tau) - N' f''
-    # f''' = (tau/mu_ratio) [-f f'' + (beta / S) * (fp^2 - tau)
-    #                        + f'' tau' (mu_ratio/tau - dmu_dT) / tau]
+    # f''' = (tau'/tau)*f'' - (T_e/mu)*(dmu/dT)*tau'*f'' - f*f''/C - beta_H*(tau-f'^2)/C
     # --------------------------------------------------
-    dy[0] = fp
-    dy[1] = fpp
-
-    # Using N' (computed once above): the inline group
-    # fpp * tau' (mu_ratio/tau - dmu_dT)/tau equals -N' fpp,
-    # and tau/mu_ratio = 1/N. So Liu Eq. 16 becomes:
-    # f''' = (1/N) [-f f'' + (beta/S)(fp^2 - tau) - N' f'']
-
-    dy[2] = (1.0 / N) * (
-        -f * fpp
-        + hartree_beta / S * (fp**2 - tau)
-        - N_prime * fpp
+    dy[0] = f_p
+    dy[1] = f_pp
+    dy[2] = (
+        tau_p / tau * f_pp
+        - visc_term * tau_p * f_pp
+        - (f * f_pp + problem.beta * (tau - f_p**2)) / C
     )
 
     # --------------------------------------------------
-    # Liu Eq. 17: Crossflow momentum
-    # (N g_cf')' + f g_cf' = 0
+    # z-momentum / crossflow (Liu Eq. 17)
+    # (C g')' + f g' = 0
     #
-    # Expanding (N g_cf')' = N g_cf'' + N' g_cf'
-    # N g_cf'' = (N g_cf')' - N' g_cf'
-    #          = -f g_cf' - g_cf' tau' (dmu_dT - mu_ratio/tau)/tau
-    # g_cf'' = (1/N) [-f g_cf' - g_cf' tau' (dmu_dT - mu_ratio/tau)/tau]
+    # g'' = (tau'/tau)*g' - (T_e/mu)*(dmu/dT)*tau'*g' - f*g'/C
     # --------------------------------------------------
-    dy[3] = gcf_p
-
-    # Same structure as Liu Eq. 16 but with no pressure-gradient term:
-    # g_cf'' = (1/N) [-f g_cf' - N' g_cf']
-    dy[4] = (1.0 / N) * (
-        -f * gcf_p
-        - N_prime * gcf_p
+    dy[5] = g_p
+    dy[6] = (
+        tau_p / tau * g_p
+        - visc_term * tau_p * g_p
+        - f * g_p / C
     )
 
     # --------------------------------------------------
-    # Liu Eq. 18: Energy equation (EXACT FORM)
-    # (N/Pr tau')' + (S - 1) [N (fp^2)']' + (K - 1) [S N (g_cf^2)']'
-    # + f [tau' + (S - 1)(fp^2)' + (K - 1) S (g_cf^2)'] = 0
+    # energy (Liu Eq. 18)
+    # tau'' is computed last — uses f''' (dy[2]) and g'' (dy[6]) already computed above
     #
-    # where:
-    #   N = mu_ratio / tau (Chapman-Rubesin parameter)
-    #   S = 1 + (gamma-1)/2 * Ma_e^2 * cos^2(Lambda)  [Liu Eq. 22, chi=1]
-    #   K = [1 + (gamma-1)/2 * Ma_e^2] / S             [Liu Eq. 21]
-    #
-    # Derivation of first-order form for tau'':
-    #
-    # Term 1: (N/Pr tau')' = (N/Pr) tau'' + (N/Pr)' tau'
-    #         = (N/Pr) tau'' + (N'/Pr) tau'
-    #
-    # Term 2: (S - 1) [N (fp^2)']'
-    #         (fp^2)' = 2 fp fpp
-    #         [N (fp^2)']' = [N * 2 fp fpp]'
-    #                      = N' * 2 fp fpp + N * 2 (fpp^2 + fp fppp)
-    #         Note: fppp is available from Liu Eq. 16 (momentum equation)
-    #
-    # Term 3: (K - 1) [S N (g_cf^2)']'
-    #         (g_cf^2)' = 2 g_cf gcf_p
-    #         [S N (g_cf^2)']' = [S N * 2 g_cf gcf_p]'
-    #                          = S N' * 2 g_cf gcf_p + S N * 2 (gcf_p^2 + g_cf gcf_pp)
-    #         Note: gcf_pp is available from Liu Eq. 17 (crossflow momentum equation)
-    #
-    # Term 4: f [tau' + (S - 1)(fp^2)' + (K - 1) S (g_cf^2)']
-    #         = f tau' + f (S - 1) * 2 fp fpp + f (K - 1) S * 2 g_cf gcf_p
-    #
-    # Solving for tau'':
-    # (N/Pr) tau'' = - (N'/Pr) tau'
-    #                - (S - 1) [N' * 2 fp fpp + N * 2 (fpp^2 + fp fppp)]
-    #                - (K - 1) S [N' * 2 g_cf gcf_p + N * 2 (gcf_p^2 + g_cf gcf_pp)]
-    #                - f tau' - f (S - 1) * 2 fp fpp - f (K - 1) S * 2 g_cf gcf_p
-    #
-    # tau'' = (Pr/N) * [all RHS terms]
+    # tau'' = tau'^2/tau - (T_e/mu)*(dmu/dT)*tau'^2
+    #       - Pr*f*tau'/C
+    #       - 2Pr(S-1)*[(T_e/mu*dmu/dT - 1/tau)*tau'*f'*f'' + f''^2 + f'*f''']
+    #       - 2Pr(K-1)S*[(T_e/mu*dmu/dT - 1/tau)*tau'*g*g' + g'^2 + g*g'']
+    #       - 2Pr*f/C*[(S-1)*f'*f'' + (K-1)*S*g*g']
     # --------------------------------------------------
+    f_ppp = dy[2]
+    g_pp = dy[6]
 
-    # N_prime was computed once near the top of this function (reused here).
-    # S and K were precomputed in build_solver_problem and passed as arguments.
-
-    # fppp and gcf_pp are exactly the momentum derivatives already solved
-    # above (Liu Eqs. 16 and 17). Reuse them directly instead of recomputing.
-    fppp = dy[2]
-    gcf_pp = dy[4]
-
-    # Compute derivatives (f'^2)' and (g_cf^2)'
-    # chain rule: (fp^2)' = 2 fp fpp and (g_cf^2)' = 2 g_cf gcf_p
-    fp2_prime = 2.0 * fp * fpp
-    gcf2_prime = 2.0 * g_cf * gcf_p
-
-    dy[5] = tau_p
-
-    # term 1: -(N'/Pr) tau'
-    term1 = -(N_prime / problem.prandtl) * tau_p
-
-    # term 2: -(S - 1) [N' * 2 fp fpp + N * 2 (fpp^2 + fp fppp)]
-    term2_bracket = N_prime * fp2_prime + N * 2.0 * (fpp**2 + fp * fppp)
-    term2 = -(S - 1.0) * term2_bracket
-
-    # term 3: -(K - 1) S [N' * 2 g_cf gcf_p + N * 2 (gcf_p^2 + g_cf gcf_pp)]
-    term3_bracket = S * (N_prime * gcf2_prime + N * 2.0 * (gcf_p**2 + g_cf * gcf_pp))
-    term3 = -(K - 1.0) * term3_bracket
-
-    # term 4: -f [tau' + (S - 1)(fp^2)' + (K - 1) S (g_cf^2)']
-    term4 = -f * (tau_p + (S - 1.0) * fp2_prime + (K - 1.0) * S * gcf2_prime)
-
-    # solve for tau'': tau'' = (Pr/N) * [sum of all terms]
-    dy[6] = (problem.prandtl / N) * (term1 + term2 + term3 + term4)
+    dy[3] = tau_p
+    dy[4] = (
+        tau_p**2 / tau
+        - visc_term * tau_p**2
+        - problem.prandtl * f * tau_p / C
+        - 2.0 * problem.prandtl * (S - 1.0) * (
+            (visc_term - 1.0 / tau) * tau_p * f_p * f_pp
+            + f_pp**2
+            + f_p * f_ppp
+        )
+        - 2.0 * problem.prandtl * (K - 1.0) * S * (
+            (visc_term - 1.0 / tau) * tau_p * g * g_p
+            + g_p**2
+            + g * g_pp
+        )
+        - 2.0 * problem.prandtl * f / C * (
+            (S - 1.0) * f_p * f_pp + (K - 1.0) * S * g * g_p
+        )
+    )
 
     return dy

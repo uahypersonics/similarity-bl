@@ -51,7 +51,7 @@ _TABLE_CONFIGS: dict[str, dict] = {
 
 
 # --------------------------------------------------
-# build_y0: shooting variables --> ODE initial condition [f, fp, fpp, g_cf, gcf_p, tau, tau_p]
+# build_y0: shooting variables --> ODE initial condition [f, f', f'', tau, tau', g, g']
 # --------------------------------------------------
 def build_y0(
     wall_bc: str,
@@ -72,7 +72,7 @@ def build_y0(
     Returns
     -------
     NDArray[np.float64]
-        Initial conditions [f(0), fp(0), fpp(0), g_cf(0), gcf_p(0), tau(0), tau_p(0)].
+        Initial conditions [f(0), f'(0), f''(0), tau(0), tau'(0), g(0), g'(0)].
     """
     fpp_0 = shooting_vars[0]
     gcfp_0 = shooting_vars[1]
@@ -87,7 +87,7 @@ def build_y0(
         tau_0 = tau_var
         taup_0 = 0.0
 
-    return np.array([0.0, 0.0, fpp_0, 0.0, gcfp_0, tau_0, taup_0])
+    return np.array([0.0, 0.0, fpp_0, tau_0, taup_0, 0.0, gcfp_0])
 
 
 # --------------------------------------------------
@@ -120,7 +120,7 @@ def save_converged(result: ShootingResult, problem: SimilarityInputs) -> None:
         "mach": problem.mach_edge,
         "beta": problem.beta,
         "sweep_angle": problem.sweep_angle,
-        "g_wall": result.solution[5, 0],  # tau(0) = T_wall / T_edge
+        "g_wall": result.solution[3, 0],  # tau(0) = T_wall / T_edge
     }
 
     # get key values for this solution based on config
@@ -130,13 +130,13 @@ def save_converged(result: ShootingResult, problem: SimilarityInputs) -> None:
 
     # val_map: superset of all possible value fields
     # config["value_fields"] picks the relevant subset (e.g. adiabatic stores g_wall, isothermal stores gp_wall)
-    # FSC solution = [f, fp, fpp, g_cf, gcf_p, tau, tau_p]
+    # FSC solution = [f, f', f'', tau, tau', g, g']
     # Note: g_wall and gp_wall refer to T_wall/T_edge (tau), not crossflow
     val_map = {
         "fpp_wall": result.solution[2, 0],
-        "gcfp_wall": result.solution[4, 0],
-        "g_wall": result.solution[5, 0],      # tau(0) = T_wall / T_edge
-        "gp_wall": result.solution[6, 0],     # tau'(0) = dT/deta at wall
+        "gcfp_wall": result.solution[6, 0],
+        "g_wall": result.solution[3, 0],      # tau(0) = T_wall / T_edge
+        "gp_wall": result.solution[4, 0],     # tau'(0) = dT/deta at wall
     }
 
     # get values for this solution based on config
