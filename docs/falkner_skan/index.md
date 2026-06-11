@@ -1,8 +1,6 @@
 # Falkner-Skan Equations
 
-The Falkner-Skan equations are a similarity reduction of the
-[2D compressible boundary layer equations](../compressible_boundary_layer_equations/2d_equations.md)
-for power-law edge velocity. All assumptions from the boundary layer equations carry over.
+The Falkner-Skan (FS) equations are a obtained by reducing the [2D compressible boundary layer equations](../compressible_boundary_layer_equations/2d_equations.md) to an ODE system. All assumptions from the boundary layer equations carry over.
 
 ??? abstract "Inherited assumptions"
     - Steady, two-dimensional, laminar flow
@@ -59,5 +57,5 @@ $$f(0) = 0, \qquad f'(0) = 0$$
 
 **Edge** ($\eta \to \infty$):
 
-$$f'(\infty) = 1, \qquad \tau(\infty) = 1$$
+$$f' = 1, \qquad \tau = 1$$
 

@@ -4,7 +4,7 @@
     These equations are obtained from the
     [3D boundary layer equations](3d_equations.md) by assuming homogeneous flow in
     the spanwise direction ($\partial/\partial z = 0$). They are the starting point for the
-    [Falkner-Skan-Cooke derivation](../falkner_skan_cooke/index.md).
+    [Falkner-Skan-Cooke derivation](../falkner_skan_cooke/derivation.md).
 
 ## Assumptions
 

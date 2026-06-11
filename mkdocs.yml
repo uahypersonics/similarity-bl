@@ -109,4 +109,7 @@ nav:
     - Reduction of Order: falkner_skan/reduction_of_order.md
   - Falkner-Skan-Cooke:
     - falkner_skan_cooke/index.md
+    - Derivation (Lévy-Lees): falkner_skan_cooke/derivation.md
+    - Derivation (IS): falkner_skan_cooke/derivation_is.md
+    - Reduction of Order: falkner_skan_cooke/reduction_of_order.md
   - Nomenclature: nomenclature.md
