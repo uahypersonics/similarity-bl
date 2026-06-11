@@ -28,6 +28,18 @@ _USER_DIR = Path.home() / ".simbl"
 
 
 # --------------------------------------------------
+# JSON encoder that converts numpy scalar types to Python floats/ints
+# --------------------------------------------------
+class _NumpyEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.floating):
+            return float(obj)
+        if isinstance(obj, np.integer):
+            return int(obj)
+        return super().default(obj)
+
+
+# --------------------------------------------------
 # LookupTable class: initial guess determination
 # --------------------------------------------------
 class LookupTable:
@@ -143,7 +155,8 @@ class LookupTable:
         # write to disk, use with open() to safeguard against partial writes or file open errors
         with open(save_path, "w") as f:
             # indent = 2 for readability (each level gets a newline and 2 spaces indentation)
-            json.dump(data, f, indent=2)
+            # use a custom encoder to convert numpy scalar types to Python floats
+            json.dump(data, f, indent=2, cls=_NumpyEncoder)
 
     # --------------------------------------------------
     # build numpy arrays for interpolation from entries list

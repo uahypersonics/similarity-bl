@@ -86,14 +86,14 @@ def build_solution(result: ShootingResult) -> FalknerSkanCookeSolution:
         - tau, tau_p: temperature profile and gradient
     """
     # Map solution array rows to corresponding dataclass fields
-    # State vector: [f, fp, fpp, g_cf, gcf_p, tau, tau_p]
+    # State vector: [f, fp, fpp, tau, tau_p, g_cf, gcf_p]
     return FalknerSkanCookeSolution(
         eta=result.eta,
         f=result.solution[0, :],
         fp=result.solution[1, :],
         fpp=result.solution[2, :],
-        g_cf=result.solution[3, :],
-        gcf_p=result.solution[4, :],
-        tau=result.solution[5, :],
-        tau_p=result.solution[6, :],
+        tau=result.solution[3, :],
+        tau_p=result.solution[4, :],
+        g_cf=result.solution[5, :],
+        gcf_p=result.solution[6, :],
     )

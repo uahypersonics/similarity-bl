@@ -114,7 +114,7 @@ def save_converged(result: ShootingResult, problem: SimilarityInputs) -> None:
 
     # key_map: superset of all possible key fields
     # config["key_fields"] picks the relevant subset (e.g. adiabatic uses mach+beta+sweep, isothermal adds g_wall)
-    # FSC solution = [f, fp, fpp, g_cf, gcf_p, tau, tau_p]
+    # FSC solution = [f, f', f'', tau, tau', g, g']
     # Note: g_wall refers to T_wall/T_edge (tau), not crossflow
     key_map = {
         "mach": problem.mach_edge,
