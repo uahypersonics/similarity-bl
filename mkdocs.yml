@@ -96,20 +96,40 @@ extra_javascript:
 nav:
   - Home: index.md
   - Installation: installation.md
-  - User Guide: user_guide.md
-  - Boundary Layer Equations:
-    - compressible_boundary_layer_equations/index.md
-    - 2D Boundary Layer: compressible_boundary_layer_equations/2d_equations.md
-    - 3D Boundary Layer: compressible_boundary_layer_equations/3d_equations.md
-    - Quasi-3D Boundary Layer: compressible_boundary_layer_equations/quasi_3d_equations.md
-  - Falkner-Skan:
-    - falkner_skan/index.md
-    - Derivation (Lévy-Lees): falkner_skan/derivation.md
-    - Derivation (IS): falkner_skan/derivation_is.md
-    - Reduction of Order: falkner_skan/reduction_of_order.md
-  - Falkner-Skan-Cooke:
-    - falkner_skan_cooke/index.md
-    - Derivation (Lévy-Lees): falkner_skan_cooke/derivation.md
-    - Derivation (IS): falkner_skan_cooke/derivation_is.md
-    - Reduction of Order: falkner_skan_cooke/reduction_of_order.md
+  - User Guide:
+    - user_guide/index.md
+    - CLI Usage: user_guide/cli_usage.md
+    - API Usage: user_guide/api_usage.md
+    - MATLAB Usage: user_guide/matlab_usage.md
+  - Workflow:
+    - workflow/index.md
+  - Configuration:
+    - configuration/index.md
+    - Inputs: configuration/inputs.md
+    - Solver Options: configuration/solver_options.md
+    - Output Formats: configuration/output_formats.md        
+  - CLI Reference:
+    - cli_reference/index.md
+  - API Reference:
+    - api_reference/index.md
+    - Architecture: api_reference/architecture.md
+  - Theory:
+    - theory/index.md
+    - Boundary Layer Equations:
+      - theory/boundary_layer_equations/index.md
+      - 2D: theory/boundary_layer_equations/2d_equations.md
+      - 3D: theory/boundary_layer_equations/3d_equations.md
+      - Quasi-3D: theory/boundary_layer_equations/quasi_3d_equations.md
+    - Falkner-Skan:
+      - theory/falkner_skan/index.md
+      - Derivation (Lévy-Lees): theory/falkner_skan/derivation.md
+      - Derivation (IS): theory/falkner_skan/derivation_is.md
+      - Reduction of Order: theory/falkner_skan/reduction_of_order.md
+    - Falkner-Skan-Cooke:
+      - theory/falkner_skan_cooke/index.md
+      - Derivation (Lévy-Lees): theory/falkner_skan_cooke/derivation.md
+      - Derivation (IS): theory/falkner_skan_cooke/derivation_is.md
+      - Reduction of Order: theory/falkner_skan_cooke/reduction_of_order.md
+  - Examples: 
+    - examples/index.md
   - Nomenclature: nomenclature.md

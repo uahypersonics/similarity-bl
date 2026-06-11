@@ -1,6 +1,6 @@
 # Falkner-Skan-Cooke Equations
 
-The Falkner-Skan-Cooke (FSC) equations obtained by reducing the [quasi-3D compressible boundary layer equations](../compressible_boundary_layer_equations/quasi_3d_equations.md) to an ODE system [@liu_2021]. 
+The Falkner-Skan-Cooke (FSC) equations obtained by reducing the [quasi-3D compressible boundary layer equations](../boundary_layer_equations/quasi_3d_equations.md) to an ODE system [@liu_2021]. 
 
 ??? abstract "Inherited assumptions"
     - Steady, laminar flow with three velocity components $(u, v, w)$

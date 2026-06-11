@@ -5,7 +5,7 @@ governing PDEs that result from applying the boundary layer approximation to the
 Navier-Stokes equations for a viscous, heat-conducting, calorically perfect gas.
 
 These equations are the starting point for similarity analyses (Falkner-Skan,
-Falkner-Skan-Cooke). Symbol definitions are collected in the [Nomenclature](../nomenclature.md) page.
+Falkner-Skan-Cooke). Symbol definitions are collected in the [Nomenclature](../../nomenclature.md) page.
 
 | Page | Contents |
 |---|---|

@@ -1,6 +1,6 @@
 # Falkner-Skan Equations
 
-The Falkner-Skan (FS) equations are a obtained by reducing the [2D compressible boundary layer equations](../compressible_boundary_layer_equations/2d_equations.md) to an ODE system. All assumptions from the boundary layer equations carry over.
+The Falkner-Skan (FS) equations are a obtained by reducing the [2D compressible boundary layer equations](../boundary_layer_equations/2d_equations.md) to an ODE system. All assumptions from the boundary layer equations carry over.
 
 ??? abstract "Inherited assumptions"
     - Steady, two-dimensional, laminar flow
@@ -36,7 +36,7 @@ $$M_e = \frac{u_e}{\sqrt{\gamma R T_e}}, \qquad \mathrm{Pr} = \frac{\mu c_p}{k}$
 
 ## ODE System
 
-The [2D compressible BL equations](../compressible_boundary_layer_equations/2d_equations.md) reduce to ODEs in $\eta$ (see derivation below).
+The [2D compressible BL equations](../boundary_layer_equations/2d_equations.md) reduce to ODEs in $\eta$ (see derivation below).
 
 **x-momentum**:
 

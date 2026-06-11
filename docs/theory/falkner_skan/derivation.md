@@ -5,7 +5,7 @@
     \text{const}$. For the more general derivation using the
     Illingworth-Stewartson transformation, see [Derivation (IS)](derivation_is.md).
 
-Starting from the steady [2D compressible BL equations](../compressible_boundary_layer_equations/2d_equations.md):
+Starting from the steady [2D compressible BL equations](../boundary_layer_equations/2d_equations.md):
 
 $$
 \frac{\partial(\rho u)}{\partial x} + \frac{\partial(\rho v)}{\partial y} = 0
@@ -35,7 +35,7 @@ $$\psi = \sqrt{2\xi}\,f(\eta)$$
 ### Outer flow
 
 The outer inviscid flow satisfies the Euler x-momentum equation (see
-[2D BL equations](../compressible_boundary_layer_equations/2d_equations.md)):
+[2D BL equations](../boundary_layer_equations/2d_equations.md)):
 
 $$-\frac{dp}{dx} = \rho_e u_e \frac{du_e}{dx}$$
 
@@ -88,7 +88,7 @@ $$
 
 From the ideal gas law $p = \rho R T$, the density is $\rho = p/(RT)$, and at the boundary layer edge $\rho_e = p_e/(RT_e)$.
 
-From the [y-momentum boundary layer equation](../compressible_boundary_layer_equations/2d_equations.md) 
+From the [y-momentum boundary layer equation](../boundary_layer_equations/2d_equations.md) 
 
 $$
 \frac{\partial p}{\partial y} = 0 \rightarrow p = p_e
