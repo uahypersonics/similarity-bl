@@ -112,19 +112,19 @@ Therefore:
 
 $$\mu' = \frac{d\mu}{dT}\,T_e\tau'$$
 
-Substituting into the boxed expressions:
+Substituting into the expressions above:
 
-$$\boxed{f''' = \frac{\tau'}{\tau}\,f''
-- \frac{T_e}{\mu}\frac{d\mu}{dT}\,\tau'f''
-- \frac{ff''}{C}
-- \frac{\beta_H(\tau - f'^2)}{C}}$$
+!!! success ""
 
-$$\boxed{\tau'' = \frac{\tau'^2}{\tau}
-- \frac{T_e}{\mu}\frac{d\mu}{dT}\,\tau'^2
-- \frac{\mathrm{Pr}\,f\tau'}{C}
-- \mathrm{Pr}(\gamma-1)M_e^2\!\left[f''^2 - \frac{\beta_H\tau f'}{C}\right]}$$
+    $$f''' = \frac{\tau'}{\tau}\,f''
+    - \frac{T_e}{\mu}\frac{d\mu}{dT}\,\tau'f''
+    - \frac{ff''}{C}
+    - \frac{\beta_H(\tau - f'^2)}{C}$$
 
-where $T = T_e\tau$ and $C = \mu(T)/(\mu_e\tau)$ are evaluated locally at each $\eta$.
+    $$\tau'' = \frac{\tau'^2}{\tau}
+    - \frac{T_e}{\mu}\frac{d\mu}{dT}\,\tau'^2
+    - \frac{\mathrm{Pr}\,f\tau'}{C}
+    - \mathrm{Pr}(\gamma-1)M_e^2\!\left[f''^2 - \frac{\beta_H\tau f'}{C}\right]$$
 
 ## State variables
 
