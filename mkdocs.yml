@@ -130,6 +130,8 @@ nav:
       - Derivation (Lévy-Lees): theory/falkner_skan_cooke/derivation.md
       - Derivation (IS): theory/falkner_skan_cooke/derivation_is.md
       - Reduction of Order: theory/falkner_skan_cooke/reduction_of_order.md
+    - Virtual Origin Concept
+      - theory/virtual_origin_concept.index.md
   - Examples: 
     - examples/index.md
   - Nomenclature: nomenclature.md
