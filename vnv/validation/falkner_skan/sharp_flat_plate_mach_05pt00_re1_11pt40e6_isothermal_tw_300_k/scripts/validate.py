@@ -12,7 +12,7 @@ import numpy as np
 from cfd_io.readers.hdf5 import read_hdf5
 from flow_state.transport import get_transport_model
 
-from simbl import SimilarityInputs, SolverOptions, solve_similarity
+from simbl import SimilarityInputs, SolverOptions, eta2y, solve_similarity
 
 # --------------------------------------------------
 # use LaTeX font rendering
@@ -150,19 +150,22 @@ for x_target in x_loc:
     dens_e_dim = dens_e * rho_inf
     visc_e = visc_model.mu(temp_e_dim)
 
-    # Levy-Lees flat-plate (m=0) eta scale: sqrt(rho_e * u_e / (2 * mu_e * x))
-    eta_scale = np.sqrt(dens_e_dim * uvel_e_dim / (2.0 * visc_e * x_i))
-
     # CFD++ profiles normalized by edge quantities
     y_i = y[i, :]
     uvel_cfd = uvel[i, :] / uvel_e
     temp_cfd = temp[i, :] / temp_e
     dens_cfd = dens[i, :] / dens_e
 
-    # inverse LL transform: y(eta) = (1/eta_scale) * integral_0^eta tau d eta'
-    y_fs = np.zeros_like(sol.eta)
-    for j in range(1, len(sol.eta)):
-        y_fs[j] = np.trapezoid(sol.tau[:j + 1], sol.eta[:j + 1]) / eta_scale
+    # map density-weighted similarity eta back to physical y
+    y_fs = eta2y(
+        eta=sol.eta,
+        tau=sol.tau,
+        x=x_i,
+        dens_edge=dens_e_dim,
+        uvel_edge=uvel_e_dim,
+        visc_edge=visc_e,
+        equations="falkner_skan",
+    )
 
     # convert to mm for cleaner tick labels
     y_i  = y_i  * 1e3

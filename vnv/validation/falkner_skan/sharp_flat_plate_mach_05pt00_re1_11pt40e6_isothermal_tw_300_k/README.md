@@ -44,7 +44,7 @@ and density ratio ρ/ρₑ.
 
 ```bash
 conda activate dev
-cd vnv/sharp_flat_plate_mach_05pt00_re1_11pt40e6_isothermal_tw_300_k
+cd vnv/validation/falkner_skan/sharp_flat_plate_mach_05pt00_re1_11pt40e6_isothermal_tw_300_k
 python scripts/validate.py
 ```
 

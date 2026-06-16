@@ -82,7 +82,7 @@ Validation cases are provided in `vnv/`. To add a new one:
    ```
 3. Add a row to the cases table in [`vnv/README.md`](vnv/README.md).
 
-See an existing case (e.g. `vnv/sharp_flat_plate_mach_05pt00_re1_11pt40e6_isothermal_tw_300_k/`)
+See an existing case (e.g. `vnv/validation/falkner_skan/sharp_flat_plate_mach_05pt00_re1_11pt40e6_isothermal_tw_300_k/`)
 for a concrete reference.
 
 ## Contributing Physics or Equations

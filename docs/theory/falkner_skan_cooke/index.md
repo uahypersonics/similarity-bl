@@ -17,7 +17,7 @@ $$U_e(\tilde{\xi}) = C_1\cdot\tilde{\xi}^m$$
 
 The Falkner-Skan similarity variable and stream function are:
 
-$$\eta = \bar{\eta}\sqrt{\frac{m+1}{2}\frac{U_e}{\nu_{e0}}},
+$$\eta = \bar{\eta}\sqrt{\frac{m+1}{2}\frac{U_e}{\nu_{e0}\tilde{\xi}}},
 \qquad
 \psi = f(\eta)\sqrt{\frac{2\nu_{e0}U_e\tilde{\xi}}{m+1}}$$
 

@@ -21,4 +21,4 @@ directory of the repository.
 
 | Case | Geometry | Mach | Re1 (1/m) | Wall BC | Solver | Reference |
 |---|---|---|---|---|---|---|
-| [Sharp flat plate, M=5, isothermal](validation/sharp_flat_plate_mach_05pt00_re1_11pt40e6_isothermal_tw_300_k/index.md) | Sharp flat plate | 5.0 | 11.4e6 | Isothermal 300 K | Falkner-Skan | CFD++ laminar |
+| [Sharp flat plate, M=5, isothermal](validation/falkner_skan/sharp_flat_plate_mach_05pt00_re1_11pt40e6_isothermal_tw_300_k/index.md) | Sharp flat plate | 5.0 | 11.4e6 | Isothermal 300 K | Falkner-Skan | CFD++ laminar |

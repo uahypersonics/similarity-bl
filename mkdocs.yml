@@ -121,6 +121,10 @@ nav:
       - 2D: theory/boundary_layer_equations/2d_equations.md
       - 3D: theory/boundary_layer_equations/3d_equations.md
       - Quasi-3D: theory/boundary_layer_equations/quasi_3d_equations.md
+    - Similarity to Physical Coordinate Transform:
+      - theory/similarity_to_physical_coordinate_transform/index.md
+      - Levy-Lees: theory/similarity_to_physical_coordinate_transform/levy_lees.md
+      - Illingworth-Stewartson: theory/similarity_to_physical_coordinate_transform/illingworth_stewartson.md
     - Falkner-Skan:
       - theory/falkner_skan/index.md
       - Derivation (Levy-Lees): theory/falkner_skan/derivation.md
@@ -150,9 +154,10 @@ nav:
       - vnv/validation/index.md
       - Falkner-Skan:
         - vnv/validation/falkner_skan/index.md
-        - Sharp flat plate (M=5, isothermal): vnv/validation/sharp_flat_plate_mach_05pt00_re1_11pt40e6_isothermal_tw_300_k/index.md
+        - Sharp flat plate (M=5, isothermal): vnv/validation/falkner_skan/sharp_flat_plate_mach_05pt00_re1_11pt40e6_isothermal_tw_300_k/index.md
       - Falkner-Skan-Cooke:
         - vnv/validation/falkner_skan_cooke/index.md
+        - Swept flat plate (M=6, 70 deg sweep): vnv/validation/falkner_skan_cooke/swept_flat_plate_mach_06pt00_re1_10pt00e6_sweep_70deg/index.md
   - Examples: 
     - examples/index.md
   - Nomenclature: nomenclature.md

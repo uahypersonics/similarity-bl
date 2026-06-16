@@ -19,7 +19,7 @@ without running anything.
 
 | Case | Geometry | Mach | Re1 (1/m) | Wall BC | Solver | Reference |
 |---|---|---|---|---|---|
-| [sharp_flat_plate_mach_05pt00_re1_11pt40e6_isothermal_tw_300_k](validation/sharp_flat_plate_mach_05pt00_re1_11pt40e6_isothermal_tw_300_k/README.md) | Sharp flat plate | 5.0 | 11.4e6 | Isothermal 300 K | Falkner-Skan | CFD++ laminar |
+| [sharp_flat_plate_mach_05pt00_re1_11pt40e6_isothermal_tw_300_k](validation/falkner_skan/sharp_flat_plate_mach_05pt00_re1_11pt40e6_isothermal_tw_300_k/README.md) | Sharp flat plate | 5.0 | 11.4e6 | Isothermal 300 K | Falkner-Skan | CFD++ laminar |
 
 ## Running a Case
 
@@ -36,6 +36,6 @@ Each case has the same structure:
 To run any case, ensure `simbl` is installed and available, then:
 
 ```bash
-cd vnv/validation/<case_name>
+cd vnv/validation/<solver_name>/<case_name>
 python scripts/validate.py
 ```

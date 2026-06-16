@@ -30,30 +30,30 @@ transformation for a flat plate (m = 0).
 
 ![FS profiles in eta-space](fs_profiles_eta.png)
 
-### Streamwise velocity u/u_e
+### Rescaled profiles in physical y-space
 
-![u/u_e comparison](similarity_vs_cfdpp_uvel.png)
+=== "$u/u_e$"
 
-### Temperature T/T_e
+    ![u/u_e comparison](similarity_vs_cfdpp_uvel.png)
 
-![T/T_e comparison](similarity_vs_cfdpp_temp.png)
+=== "$T/T_e$"
 
-### Density rho/rho_e
+    ![T/T_e comparison](similarity_vs_cfdpp_temp.png)
 
-![rho/rho_e comparison](similarity_vs_cfdpp_dens.png)
+=== "$\rho/\rho_e$"
+
+    ![rho/rho_e comparison](similarity_vs_cfdpp_dens.png)
 
 The velocity and temperature profiles show close agreement between the
-Falkner-Skan similarity solution and the CFD++ RANS solution across all five
-stations. The small deviation in density is expected: the similarity solution
-assumes constant pressure, while the CFD++ solution has a weak streamwise
-pressure gradient.
+Falkner-Skan similarity solution and the CFD++ solution for all
+stations.
 
 ## Reproduce
 
 Scripts and data are in
-[`vnv/sharp_flat_plate_mach_05pt00_re1_11pt40e6_isothermal_tw_300_k/`](https://github.com/uahypersonics/similarity-bl/tree/main/vnv/sharp_flat_plate_mach_05pt00_re1_11pt40e6_isothermal_tw_300_k):
+[`vnv/validation/falkner_skan/sharp_flat_plate_mach_05pt00_re1_11pt40e6_isothermal_tw_300_k/`](https://github.com/uahypersonics/similarity-bl/tree/main/vnv/validation/falkner_skan/sharp_flat_plate_mach_05pt00_re1_11pt40e6_isothermal_tw_300_k):
 
 ```bash
-cd vnv/sharp_flat_plate_mach_05pt00_re1_11pt40e6_isothermal_tw_300_k
+cd vnv/validation/falkner_skan/sharp_flat_plate_mach_05pt00_re1_11pt40e6_isothermal_tw_300_k
 python scripts/validate.py
 ```

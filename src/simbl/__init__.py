@@ -25,6 +25,7 @@ from simbl.solver import (
 from simbl.solver.bcs import WallBCType
 from simbl.solver.inputs import SimilarityInputs
 from simbl.solver.options import SolverOptions
+from simbl.transform import eta2y
 
 # --------------------------------------------------
 # configure package-level logger
@@ -58,6 +59,7 @@ __all__ = [
     "config_load",
     "config_save",
     "config_to_inputs",
+    "eta2y",
     "solve_similarity",
     "write",
 ]
