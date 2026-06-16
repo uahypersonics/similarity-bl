@@ -1,11 +1,19 @@
 """ODE system for compressible Falkner-Skan similarity equations
 
 The system of 5 equations in transformed variables:
-    f'     = f_p
-    f_p'   = f_pp
-    f_pp'  = (tau/mu)[-f*f_pp + f_pp*tau_p*(mu/tau - dmu/dT)/tau + beta*f_p^2 - beta*tau]
-    tau'   = tau_p
-    tau_p' = (tau/mu)[tau_p^2*(mu/tau - dmu/dT)/tau - Pr*f*tau_p - Pr*mu*(gamma-1)*M^2*f_pp^2/tau + Pr*(gamma-1)*M^2*beta*tau*f_p]
+
+    state vector:
+    y0 = f
+    y1 = f'
+    y2 = f''
+    y3 = tau
+    y4 = tau'
+
+    y0' = f' = y1
+    y1' = f'' = y2
+    y2' = f''' =
+    y3' = tau' = y4
+    y4' = tau'' =
 
 Where:
     f    = stream function

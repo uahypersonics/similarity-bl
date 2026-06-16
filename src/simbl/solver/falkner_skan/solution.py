@@ -34,9 +34,9 @@ class FalknerSkanSolution:
         Velocity ratio u/u_e
     fpp : ndarray
         Velocity gradient d^2f/deta^2
-    g : ndarray
+    tau : ndarray
         Temperature ratio T/T_e
-    gp : ndarray
+    taup : ndarray
         Temperature gradient dg/deta
     """
 
@@ -49,8 +49,8 @@ class FalknerSkanSolution:
     fpp: NDArray[np.float64]
 
     # temperature profiles
-    g: NDArray[np.float64]
-    gp: NDArray[np.float64]
+    tau: NDArray[np.float64]
+    taup: NDArray[np.float64]
 
 
 # --------------------------------------------------
@@ -71,14 +71,16 @@ def build_solution(result: ShootingResult) -> FalknerSkanSolution:
         Contains:
         - eta: similarity coordinate
         - f, fp, fpp: stream function and velocity profiles
-        - g, gp: temperature profile and gradient
+        - tau, taup: temperature profile and gradient
     """
+
     # map solution array rows to corresponding dataclass fields
+    # # state vector: [f, fp, fpp, tau, taup]
     return FalknerSkanSolution(
         eta=result.eta,
         f=result.solution[0, :],
         fp=result.solution[1, :],
         fpp=result.solution[2, :],
-        g=result.solution[3, :],
-        gp=result.solution[4, :],
+        tau=result.solution[3, :],
+        taup=result.solution[4, :],
     )

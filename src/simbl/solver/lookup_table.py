@@ -198,7 +198,8 @@ class LookupTable:
         # auto-scale: normalize each key dimension by its range
         # dimensions with zero range (single value) get unit scaling
         ranges = self._points.max(axis=0) - self._points.min(axis=0)
-        self._scale = np.where(ranges > 0, 1.0 / ranges, 1.0)
+        safe_ranges = np.where(ranges > 0, ranges, 1.0)
+        self._scale = 1.0 / safe_ranges
 
     # --------------------------------------------------
     # predict initial guess values

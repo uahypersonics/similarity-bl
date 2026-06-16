@@ -48,6 +48,7 @@ theme:
     - content.code.annotate
     - content.action.edit
     - content.action.view
+    - content.tabs.link
 
 # --------------------------------------------------
 # plugins
@@ -122,16 +123,36 @@ nav:
       - Quasi-3D: theory/boundary_layer_equations/quasi_3d_equations.md
     - Falkner-Skan:
       - theory/falkner_skan/index.md
-      - Derivation (Lévy-Lees): theory/falkner_skan/derivation.md
+      - Derivation (Levy-Lees): theory/falkner_skan/derivation.md
       - Derivation (IS): theory/falkner_skan/derivation_is.md
       - Reduction of Order: theory/falkner_skan/reduction_of_order.md
     - Falkner-Skan-Cooke:
       - theory/falkner_skan_cooke/index.md
-      - Derivation (Lévy-Lees): theory/falkner_skan_cooke/derivation.md
+      - Derivation (Levy-Lees): theory/falkner_skan_cooke/derivation.md
       - Derivation (IS): theory/falkner_skan_cooke/derivation_is.md
       - Reduction of Order: theory/falkner_skan_cooke/reduction_of_order.md
     - Virtual Origin Concept:
       - theory/virtual_origin_concept/index.md
+  - Validation and Verification:
+    - vnv/index.md
+    - Verification:
+      - vnv/verification/index.md
+      - Falkner-Skan:
+        - vnv/verification/falkner_skan/index.md
+        - Blasius limit: vnv/verification/falkner_skan/blasius.md
+        - Crocco relation: vnv/verification/falkner_skan/crocco.md
+        - Hiemenz stagnation point: vnv/verification/falkner_skan/hiemenz/index.md
+        - Hartree table: vnv/verification/falkner_skan/hartree/index.md
+        - Separation point: vnv/verification/falkner_skan/separation/index.md
+      - Falkner-Skan-Cooke:
+        - vnv/verification/falkner_skan_cooke/index.md
+    - Validation:
+      - vnv/validation/index.md
+      - Falkner-Skan:
+        - vnv/validation/falkner_skan/index.md
+        - Sharp flat plate (M=5, isothermal): vnv/validation/sharp_flat_plate_mach_05pt00_re1_11pt40e6_isothermal_tw_300_k/index.md
+      - Falkner-Skan-Cooke:
+        - vnv/validation/falkner_skan_cooke/index.md
   - Examples: 
     - examples/index.md
   - Nomenclature: nomenclature.md

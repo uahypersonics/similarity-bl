@@ -56,6 +56,11 @@ If you use `simbl` in your research, please cite it:
 }
 ```
 
+## Validation and Verification
+
+Reproducible VnV cases comparing `simbl` against independent reference data
+are in [`vnv/`](vnv/README.md).
+
 ## Code Style
 
 This project follows established Python community conventions so that

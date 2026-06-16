@@ -2,8 +2,8 @@
 
 !!! note
     This derivation uses the Illingworth-Stewartson transformation following [@liu_2021].
-    For the equivalent derivation using the Lévy-Lees transformation,
-    see [Derivation (Lévy-Lees)](derivation.md).
+    For the equivalent derivation using the Levy-Lees transformation,
+    see [Derivation (Levy-Lees)](derivation.md).
 
 Starting from the [quasi-3D compressible BL equations](../boundary_layer_equations/quasi_3d_equations.md):
 

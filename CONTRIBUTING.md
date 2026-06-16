@@ -67,6 +67,24 @@ and why.
 
 One feature or fix per pull request. Keep PRs focused so they are easy to review.
 
+## Contributing a VnV Case
+
+Validation cases are provided in `vnv/`. To add a new one:
+
+1. Create a directory using the naming convention:
+   `<geometry>_mach_<M>_re1_<Re>_<wall_bc>[_tw_<Tw>]`
+2. Add the following structure:
+   ```
+   data/        reference baseflow or tabulated data
+   figures/     pre-generated comparison figures
+   scripts/     validate.py - reproduces all figures
+   README.md    case description, conditions, expected outcome
+   ```
+3. Add a row to the cases table in [`vnv/README.md`](vnv/README.md).
+
+See an existing case (e.g. `vnv/sharp_flat_plate_mach_05pt00_re1_11pt40e6_isothermal_tw_300_k/`)
+for a concrete reference.
+
 ## Contributing Physics or Equations
 
 Changes that touch the governing equations, transformations, or numerical methods should:
