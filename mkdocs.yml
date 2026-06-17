@@ -104,6 +104,11 @@ nav:
     - MATLAB Usage: user_guide/matlab_usage.md
   - Workflow:
     - workflow/index.md
+    - Define Solver Inputs: workflow/define_solver_inputs.md
+    - Define Solver Options: workflow/define_solver_options.md
+    - Run Solver: workflow/run_solver.md
+    - Optionally Map To Physical Space: workflow/map_to_physical_space.md
+    - Use Or Export Profiles: workflow/use_or_export_profiles.md
   - Configuration:
     - configuration/index.md
     - Inputs: configuration/inputs.md
