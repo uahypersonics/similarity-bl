@@ -18,19 +18,9 @@ baseflow for a swept flat plate at Mach 6 with an isothermal wall.
 
 ## Validation Approach
 
-The Falkner-Skan-Cooke similarity solution is compared against wall-normal
-profiles extracted from the CFD++ laminar baseflow at five streamwise stations:
-x = 0.1, 0.2, 0.3, 0.4, 0.5 m.
+The Falkner-Skan-Cooke similarity solution is compared against wall-normal profiles extracted from the CFD++ laminar baseflow at five streamwise stations: x = 0.1, 0.2, 0.3, 0.4, 0.5 m.
 
-At each station, local CFD edge conditions are extracted where the spanwise
-velocity reaches 99 percent of the freestream spanwise velocity,
-$0.99w_{\infty}$. The local edge Mach number and sweep angle are passed to the FSC
-solver. A separate locally self-similar solution is computed at each station
-because the edge conditions vary with streamwise location. This treats each
-station as a local similarity problem; it does not fully model the non-similar
-streamwise evolution of the CFD boundary layer. Similarity profiles are mapped
-back to physical y-space using the
-[Illingworth-Stewartson inverse transform](../../../../theory/similarity_to_physical_coordinate_transform/illingworth_stewartson.md).
+At each station, local CFD edge conditions are extracted where the spanwise velocity reaches 99 percent of the freestream spanwise velocity, $0.99w_{\infty}$. For each station, the FSC solution is run once with $\beta = 0$ and once with $\beta = \beta_{\mathrm{cfd}}$, where $\beta_{\mathrm{cfd}}$ is estimated from the local CFD data. Similarity profiles are mapped back to physical y-space using the [Illingworth-Stewartson inverse transform](../../../../theory/similarity_to_physical_coordinate_transform/illingworth_stewartson.md).
 
 ## Results
 
@@ -74,8 +64,11 @@ back to physical y-space using the
 
     ![rho/rho_e comparison](similarity_vs_cfd_dens.png)
 
-The streamwise, spanwise, temperature, and density profiles show reasonable agreement
-between the Falkner-Skan-Cooke similarity solution and the CFD++ solution for the provided stations.
+The streamwise, spanwise, temperature, and density profiles show reasonable
+agreement between the Falkner-Skan-Cooke similarity solution and the CFD++
+solution for the provided stations. The plotted comparisons include both the
+$\beta = 0$ FSC solution and the FSC solution using $\beta$ inferred from the
+CFD edge data.
 
 ## Reproduce
 
