@@ -11,7 +11,7 @@ from __future__ import annotations
 import warnings
 from dataclasses import dataclass
 
-from simbl.solver.equations import VALID_EQUATIONS
+from simbl.solver.equations import EQUATIONS_ALIASES, VALID_EQUATIONS
 
 
 # --------------------------------------------------
@@ -104,6 +104,8 @@ class SolverOptions:
             raise ValueError(f"epsilon must be positive: {self.epsilon}")
         if not 0 < self.relaxation_factor < 1:
             raise ValueError(f"relaxation_factor must be between 0 and 1: {self.relaxation_factor}")
+        # normalize short aliases (fs, fsc) to their canonical form
+        object.__setattr__(self, "equations", EQUATIONS_ALIASES.get(self.equations, self.equations))
         if self.equations not in VALID_EQUATIONS:
             raise ValueError(
                 f"equations must be one of {set(VALID_EQUATIONS)}: got {self.equations!r}"

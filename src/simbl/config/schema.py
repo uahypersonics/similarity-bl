@@ -2,7 +2,8 @@
 
 Maps the TOML config format to validated Python objects:
 
-    [conditions]: edge flow conditions (Mach, temperature, beta, gas properties)
+    [conditions]: edge flow conditions (Mach, temperature, beta, sweep angle)
+    [gas]: thermophysical gas properties (gamma, Prandtl number)
     [wall]: wall boundary condition (type, temp_wall)
     [viscosity]: viscosity model selection and parameters
     [numerics]: numerical settings (grid, tolerances, ODE method)
@@ -17,7 +18,7 @@ from flow_state.transport import available_transport_models
 from pydantic import BaseModel, Field, field_validator
 
 from simbl.solver.bcs import WallBCType
-from simbl.solver.equations import VALID_EQUATIONS
+from simbl.solver.equations import EQUATIONS_ALIASES, VALID_EQUATIONS
 
 
 # --------------------------------------------------
@@ -32,6 +33,14 @@ class ConditionsConfig(BaseModel):
     # all remaining fields are optional - defaults applied if absent in TOML
     beta: float = Field(default=0.0, description="Falkner-Skan pressure gradient parameter")
     sweep_angle: float = Field(default=0.0, ge=0, lt=90, description="Sweep angle [deg] (0 = 2D Falkner-Skan, >0 = Falkner-Skan-Cooke)")
+
+
+# --------------------------------------------------
+# GasConfig: thermophysical gas properties
+# --------------------------------------------------
+class GasConfig(BaseModel):
+    """Thermophysical gas properties (ratio of specific heats, Prandtl number)."""
+
     gamma: float = Field(default=1.4, gt=1, description="Specific heat ratio")
     prandtl: float = Field(default=0.72, gt=0, description="Prandtl number")
 
@@ -105,6 +114,8 @@ class SolverConfig(BaseModel):
         mach_edge = 6.0
         temp_edge = 300.0
         beta = 0.0
+
+        [gas]
         gamma = 1.4
         prandtl = 0.72
 
@@ -129,6 +140,8 @@ class SolverConfig(BaseModel):
     equations: str = Field(default="falkner_skan", description="Governing equations: falkner_skan or falkner_skan_cooke")
     # conditions is required, no defaults, must be specified in TOML config file
     conditions: ConditionsConfig
+    # gas properties default to air if [gas] section is absent
+    gas: GasConfig = Field(default_factory=lambda: GasConfig())
     # default_factory=WallConfig constructs a fresh WallConfig() if the [wall] section is absent
     wall: WallConfig = Field(default_factory=WallConfig)
     viscosity: ViscosityConfig = Field(default_factory=ViscosityConfig)
@@ -137,6 +150,8 @@ class SolverConfig(BaseModel):
     @field_validator("equations")
     @classmethod
     def _validate_equations(cls, v: str) -> str:
+        # normalize short aliases (fs, fsc) to their canonical form
+        v = EQUATIONS_ALIASES.get(v, v)
         if v not in VALID_EQUATIONS:
             raise ValueError(f"Unknown equations '{v}'. Choose: {', '.join(sorted(VALID_EQUATIONS))}")
         return v

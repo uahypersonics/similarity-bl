@@ -24,7 +24,7 @@ DEFAULT_CONFIG = "simbl_config.toml"
 # --------------------------------------------------
 # solve command: load config, apply overrides, run solver
 #
-# simbl solve takes an optional config file argument, and optional CLI overrides for config values
+# simbl solve takes an optional config file argument, and optional cli overrides for config values
 # --------------------------------------------------
 def cmd_solve(
     config: Annotated[
@@ -32,7 +32,7 @@ def cmd_solve(
         typer.Argument(help="TOML configuration file."),
     ] = None,
     # --------------------------------------------------
-    # optional CLI overrides (applied on top of config file values)
+    # optional cli overrides (applied on top of config file values)
     # --------------------------------------------------
     mach: Annotated[
         float | None,
@@ -70,9 +70,9 @@ def cmd_solve(
     # output options
     # --------------------------------------------------
     output: Annotated[
-        Path | None,
+        Path,
         typer.Option("--output", "-o", help="Output file (.dat or .json)."),
-    ] = None,
+    ] = Path("simbl.dat"),
     quiet: Annotated[
         bool,
         typer.Option("--quiet", "-q", help="Suppress console output."),
@@ -90,15 +90,34 @@ def cmd_solve(
     """
 
     # load necessary functions and classes for config handling and solving
-    from simbl.config.config_ops import config_to_inputs
+    from simbl.config.config_ops import config_load, config_to_inputs
     from simbl.config.schema import SolverConfig
     from simbl.io import write
     from simbl.solver import solve_similarity
 
-    # load config file or build a minimal default
-    cfg = _load_solver_config(config=config, mach=mach, temp_edge=temp_edge)
+    # load config file
+    # resolve which config file to use: explicit argument, then auto-discovered default
+    if config is not None:
+        config_path = Path(config)
+    else:
+        config_path = Path(DEFAULT_CONFIG) if Path(DEFAULT_CONFIG).exists() else None
 
-    # apply CLI overrides via mutable dict
+    if config_path is None:
+        typer.echo("No configuration file found.", err=True)
+        typer.echo("  Run `simbl init` to generate a template, or pass a config file as an argument.", err=True)
+        raise typer.Exit(1)
+
+    if not config_path.exists():
+        typer.echo(f"Config file not found: {config_path}", err=True)
+        raise typer.Exit(1)
+
+    try:
+        cfg = config_load(config_path)
+    except Exception as error:
+        typer.echo(f"Error parsing {config_path}: {error}", err=True)
+        raise typer.Exit(1) from None
+
+    # apply cli overrides via mutable dict
     cfg_dict = cfg.model_dump()
     if mach is not None:
         cfg_dict["conditions"]["mach_edge"] = mach
@@ -117,7 +136,7 @@ def cmd_solve(
     if n_points is not None:
         cfg_dict["numerics"]["n_points"] = n_points
 
-    # re-validate the config with the CLI overrides applied, to catch any errors in the overrides
+    # re-validate the config with the cli overrides applied, to catch any errors in the overrides
     try:
         cfg = SolverConfig(**cfg_dict)
     except Exception as error:
@@ -138,74 +157,21 @@ def cmd_solve(
     if not quiet:
         typer.echo(f"Mach = {problem.mach_edge}, beta = {problem.beta}, wall = {problem.wall_bc}")
         typer.echo(f"  f''(0) = {sol.fpp[0]:.6f}")
-        typer.echo(f"  g(0)   = {sol.g[0]:.6f}")
-        typer.echo(f"  g'(0)  = {sol.gp[0]:.6f}")
-        # w'(0) is only present for Falkner-Skan-Cooke (swept-wing) solutions
-        if hasattr(sol, "wp"):
-            typer.echo(f"  w'(0)  = {sol.wp[0]:.6f}")
+        typer.echo(f"  tau(0)   = {sol.tau[0]:.6f}")
+        typer.echo(f"  tau'(0)  = {sol.taup[0]:.6f}")
+        # g'(0) is only present for Falkner-Skan-Cooke solutions
+        if hasattr(sol, "gp"):
+            typer.echo(f"  g'(0)  = {sol.gp[0]:.6f}")
         typer.echo(f"  Converged: {info.converged} ({info.iterations} iterations)")
 
-    # write output file if requested
-    if output is not None:
-        try:
-            write(sol, output, problem=problem, shooting_result=info)
-        except Exception as error:
-            typer.echo(f"Error writing output: {error}", err=True)
-            raise typer.Exit(1) from None
-        if not quiet:
-            typer.echo(f"  Output: {output}")
+    # write output file
+    try:
+        write(sol, output, problem=problem, shooting_result=info)
+    except Exception as error:
+        typer.echo(f"Error writing output: {error}", err=True)
+        raise typer.Exit(1) from None
+    if not quiet:
+        typer.echo(f"  Output: {output}")
 
 
-# --------------------------------------------------
-# solve command helpers
-# --------------------------------------------------
-def _load_solver_config(config: Path | None, mach: float | None, temp_edge: float | None):
-    """Load solver configuration from a file or minimal CLI inputs.
 
-    Args:
-        config: Optional configuration file path.
-        mach: Optional CLI edge Mach override.
-        temp_edge: Optional CLI edge temperature override.
-
-    Returns:
-        Validated solver configuration.
-    """
-
-    # load necessary config helpers lazily so CLI import stays lightweight
-    from simbl.config.config_ops import config_load
-    from simbl.config.schema import ConditionsConfig, SolverConfig
-
-    # load explicitly requested config file
-    if config is not None:
-        if not config.exists():
-            typer.echo(f"Config file not found: {config}", err=True)
-            raise typer.Exit(1)
-        try:
-            cfg = config_load(config)
-        except Exception as error:
-            typer.echo(f"Error parsing {config}: {error}", err=True)
-            raise typer.Exit(1) from None
-        return cfg
-
-    # load default config from the current directory when present
-    default_path = Path(DEFAULT_CONFIG)
-    if default_path.exists():
-        try:
-            cfg = config_load(default_path)
-        except Exception as error:
-            typer.echo(f"Error parsing {default_path}: {error}", err=True)
-            raise typer.Exit(1) from None
-        return cfg
-
-    # build a minimal config from required CLI flags
-    if mach is not None and temp_edge is not None:
-        cfg = SolverConfig(conditions=ConditionsConfig(mach_edge=mach, temp_edge=temp_edge))
-        return cfg
-
-    # report missing configuration inputs
-    typer.echo("No configuration found.", err=True)
-    typer.echo(
-        "  Run `simbl init` to generate a template, or pass --mach and --temp-edge.",
-        err=True,
-    )
-    raise typer.Exit(1)

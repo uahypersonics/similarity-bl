@@ -129,10 +129,10 @@ def _write_tecplot(
         f.write(f'AUXDATA fpp_wall = "{solution.fpp[0]}"\n')
 
         # Handle both old and new naming
-        if hasattr(solution, 'tau_p'):
-            f.write(f'AUXDATA taup_wall = "{solution.tau_p[0]}"\n')
+        if hasattr(solution, 'taup'):
+            f.write(f'AUXDATA taup_wall = "{solution.taup[0]}"\n')
             f.write(f'AUXDATA tau_wall = "{solution.tau[0]}"\n')
-        else:
+        elif hasattr(solution, 'gp'):
             f.write(f'AUXDATA gp_wall = "{solution.gp[0]}"\n')
             f.write(f'AUXDATA g_wall = "{solution.g[0]}"\n')
 
