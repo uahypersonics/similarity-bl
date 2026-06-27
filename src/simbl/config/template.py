@@ -18,6 +18,10 @@ CONFIG_TEMPLATE_FS = """\
 # equations: "falkner_skan" or "fs" for 2D, "falkner_skan_cooke" or "fsc" for 3D
 equations = "falkner_skan"
 
+# --------------------------------------------------
+# conditions
+# --------------------------------------------------
+
 [conditions]
 # edge mach number
 mach_edge = 6.0
@@ -26,20 +30,36 @@ temp_edge = 300.0
 # hartree parameter (beta = 2m/(m+1)))
 beta = 0.0
 
+# --------------------------------------------------
+# gas properties
+# --------------------------------------------------
+
 [gas]
 # ratio of specific heats
 gamma = 1.4
 # Prandtl number
 prandtl = 0.72
 
+# --------------------------------------------------
+# wall boundary condition
+# --------------------------------------------------
+
 [wall]
 # wall BC: "adiabatic" or "isothermal"
 type = "adiabatic"
 # temp_wall = 600.0  # wall temperature [K] (isothermal only)
 
+# --------------------------------------------------
+# viscosity model
+# --------------------------------------------------
+
 [viscosity]
 # available models: sutherland, sutherland_low_temp, sutherland_blended, keyes, power_law
 model = "sutherland"
+
+# --------------------------------------------------
+# numerical solver options
+# --------------------------------------------------
 
 [numerics]
 # maximum similarity coordinate (eta = 8-20 usually sufficient)
@@ -52,6 +72,8 @@ tolerance = 1e-8
 max_iterations = 100
 # ode integrator method passed to scipy.integrate.solve_ivp (LSODA, RK45, RK23, DOP853, Radau, BDF)
 ode_method = "LSODA"
+# maximum wall-clock time [s] for one solve call (increase for difficult cases)
+max_solve_time = 20.0
 """
 
 # --------------------------------------------------
@@ -65,6 +87,10 @@ CONFIG_TEMPLATE_FSC = """\
 # equations: "falkner_skan" or "fs" for 2D, "falkner_skan_cooke" or "fsc" for 3D
 equations = "falkner_skan_cooke"
 
+# --------------------------------------------------
+# conditions
+# --------------------------------------------------
+
 [conditions]
 # edge mach number
 mach_edge = 6.0
@@ -75,20 +101,36 @@ beta = 0.0
 # sweep angle [deg] (0 = 2D, must be < 90)
 sweep_angle = 45.0
 
+# --------------------------------------------------
+# gas properties
+# --------------------------------------------------
+
 [gas]
 # ratio of specific heats
 gamma = 1.4
 # Prandtl number
 prandtl = 0.72
 
+# --------------------------------------------------
+# wall boundary condition
+# --------------------------------------------------
+
 [wall]
 # wall BC: "adiabatic" or "isothermal"
 type = "adiabatic"
 # temp_wall = 600.0  # wall temperature [K] (isothermal only)
 
+# --------------------------------------------------
+# viscosity model
+# --------------------------------------------------
+
 [viscosity]
 # available models: sutherland, sutherland_low_temp, sutherland_blended, keyes, power_law
 model = "sutherland"
+
+# --------------------------------------------------
+# numerical solver options
+# --------------------------------------------------
 
 [numerics]
 # maximum similarity coordinate (eta = 8-20 usually sufficient)
@@ -101,6 +143,8 @@ tolerance = 1e-8
 max_iterations = 100
 # ode integrator method passed to scipy.integrate.solve_ivp (LSODA, RK45, RK23, DOP853, Radau, BDF)
 ode_method = "LSODA"
+# maximum wall-clock time [s] for one solve call (increase for difficult cases)
+max_solve_time = 20.0
 """
 
 # --------------------------------------------------
