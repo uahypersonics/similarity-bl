@@ -1,7 +1,7 @@
 """Lookup table with inverse-distance weighted interpolation for initial guesses
 
 Field-agnostic: works for any combination of key dimensions and value fields.
-Persistence: loads from package defaults, saves converged solutions to ~/.simbl/.
+Loads read-only seed data shipped with the package.
 Auto-scales key dimensions by range for distance calculation.
 """
 
@@ -12,31 +12,14 @@ from __future__ import annotations
 
 import json
 from importlib.resources import files
-from pathlib import Path
 
 import numpy as np
 from numpy.typing import NDArray
 
 # --------------------------------------------------
-# default paths
-#
-# package tables: shipped with the wheel (read-only seed data)
-# user tables:    ~/.simbl/ (read-write, grows with converged solutions)
+# package data path — tables shipped with the wheel (read-only)
 # --------------------------------------------------
 _PACKAGE_DATA = files("simbl") / "data"
-_USER_DIR = Path.home() / ".simbl"
-
-
-# --------------------------------------------------
-# JSON encoder that converts numpy scalar types to Python floats/ints
-# --------------------------------------------------
-class _NumpyEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, np.floating):
-            return float(obj)
-        if isinstance(obj, np.integer):
-            return int(obj)
-        return super().default(obj)
 
 
 # --------------------------------------------------
@@ -45,13 +28,13 @@ class _NumpyEncoder(json.JSONEncoder):
 class LookupTable:
     """Lookup table with inverse-distance weighted interpolation
 
-    Each instance handles one of the following (model, wall_bc) combinations
+    Each instance handles one of the following (model, wall_bc) combinations:
     - Falkner-Skan with adiabatic wall
     - Falkner-Skan with isothermal wall
     - Falkner-Skan-Cooke with adiabatic wall
     - Falkner-Skan-Cooke with isothermal wall
 
-    Tables are saved to ~/.simbl/ and grow as new converged solutions are added
+    Seed data is shipped with the package and is read-only.
 
     Parameters
     ----------
@@ -109,54 +92,21 @@ class LookupTable:
         return f"LookupTable({self.fname!r}, {len(self)} entries)"
 
     # --------------------------------------------------
-    # load table from disk
+    # load table from package data
     # --------------------------------------------------
     def _load(self) -> None:
-        """Load lookup table from disk (user table first, then package default)"""
-        user_path = _USER_DIR / self.fname
-
-        # try user table first
-        if user_path.exists():
-            with open(user_path) as f:
-                data = json.load(f)
+        """Load lookup table from package data"""
+        try:
+            # use read_text + json.loads because package data may be inside a zip/wheel
+            text = (_PACKAGE_DATA / self.fname).read_text(encoding="utf-8")
+            data = json.loads(text)
             self._entries = data.get("entries", [])
-        else:
-            # fall back to package defaults if user table not found
-            try:
-                # use read_text + json.loads because package data may be inside a zip/wheel
-                text = (_PACKAGE_DATA / self.fname).read_text(encoding="utf-8")
-                data = json.loads(text)
-                self._entries = data.get("entries", [])
-            except (FileNotFoundError, TypeError):
-                # no package data found, predict() will use default_values instead
-                pass
+        except (FileNotFoundError, TypeError):
+            # no package data found, predict() will use default_values instead
+            pass
 
         # build numpy arrays from entries for interpolation
         self._build_arrays()
-
-    # --------------------------------------------------
-    # save table to disk
-    # --------------------------------------------------
-    def _save(self) -> None:
-        """Save lookup table to ~/.simbl/{fname}"""
-        save_path = _USER_DIR / self.fname
-        save_path.parent.mkdir(parents=True, exist_ok=True)
-
-        # convert entries to JSON dictionary with metadata
-        data = {
-            "metadata": {
-                "key_fields": self.key_fields,
-                "value_fields": self.value_fields,
-                "entries_count": len(self._entries),
-            },
-            "entries": self._entries,
-        }
-
-        # write to disk, use with open() to safeguard against partial writes or file open errors
-        with open(save_path, "w") as f:
-            # indent = 2 for readability (each level gets a newline and 2 spaces indentation)
-            # use a custom encoder to convert numpy scalar types to Python floats
-            json.dump(data, f, indent=2, cls=_NumpyEncoder)
 
     # --------------------------------------------------
     # build numpy arrays for interpolation from entries list
@@ -281,44 +231,4 @@ class LookupTable:
 
         return interpolated_values
 
-    # --------------------------------------------------
-    # update: add a converged solution to the table
-    # --------------------------------------------------
-    def update(self, key_values: dict[str, float], values: dict[str, float]) -> None:
-        """Add a converged solution to the lookup table
-
-        Parameters
-        ----------
-        key_values : dict[str, float]
-            Key fields identifying this solution (e.g. {"mach": 4.0, "beta": 0.0})
-        values : dict[str, float]
-            Converged shooting variable values (e.g. {"fpp_wall": 0.615, "g_wall": 3.69})
-        """
-        # round key values to 4 decimal places for consistency and to avoid floating point issues in matching entries
-        rounded_keys = {k: round(v, 4) for k, v in key_values.items()}
-
-        # check for existing entry with matching keys
-        for entry in self._entries:
-            # check if all key fields match within a small tolerance (1e-6) to account for floating point precision
-            if all(abs(entry[k] - rounded_keys[k]) < 1e-6 for k in self.key_fields):
-                # update existing entry in-place (entry is a reference to the dict in self._entries, not a copy)
-                # so a change in entry will update the dict in self._entries, and we can break after updating since we found the match
-                for v_field in self.value_fields:
-                    entry[v_field] = values[v_field]
-                # update the table and return to caller
-                self._build_arrays()
-                self._save()
-                return
-
-        # new entry
-
-        # generate a new entry dict with both key fields and value fields, and append to entries list
-        new_entry = {}
-        new_entry.update(rounded_keys)
-        new_entry.update(values)
-        # append the new entry to the entries list, rebuild arrays for interpolation, and save to disk
-        self._entries.append(new_entry)
-        # save after updating the entries list, so that the new entry is included in the saved data
-        self._build_arrays()
-        self._save()
 

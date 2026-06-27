@@ -18,11 +18,11 @@ $$-\frac{dp}{dx} = \rho_e u_e \frac{du_e}{dx}$$
 
 ## Definitions
 
-**Stream function** [@white_2006; @schlichting_2017]:
+**Stream function** [^white_2006][^schlichting_2017]:
 
 $$\rho u = \frac{\partial\psi}{\partial y}, \qquad \rho v = -\frac{\partial\psi}{\partial x}$$
 
-**Levy-Lees similarity coordinates** [@choen_1955; @white_2006]:
+**Levy-Lees similarity coordinates** [^choen_1955][^white_2006]:
 
 $$\xi = \int_0^x \rho_e \mu_e u_e\,dx', \qquad \eta = \frac{u_e}{\sqrt{2\xi}}\int_0^y \rho\,dy'$$
 
@@ -58,4 +58,8 @@ $$f(0) = 0, \qquad f'(0) = 0$$
 **Edge** ($\eta \to \infty$):
 
 $$f' = 1, \qquad \tau = 1$$
+
+[^choen_1955]: Cohen, C. B. & Reshotko, E. (1955). *Similar solutions for the compressible laminar boundary layer with heat transfer and pressure gradient*. NACA TN 1293. [PDF](https://apps.dtic.mil/sti/tr/pdf/ADA379809.pdf)
+[^white_2006]: White, F. M. (2006). *Viscous Fluid Flow*, 3rd ed. McGraw-Hill, New York.
+[^schlichting_2017]: Schlichting, H. & Gersten, K. (2017). *Boundary Layer Theory*, 9th ed. Springer. DOI: [10.1007/978-3-662-52919-5](https://doi.org/10.1007/978-3-662-52919-5)
 

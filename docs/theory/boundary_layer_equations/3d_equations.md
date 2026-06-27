@@ -9,7 +9,7 @@
 ## Governing Equations
 
 The three-dimensional compressible laminar boundary layer equations are
-(see [@liu_2021]):
+(see [^liu_2021]):
 
 **Continuity**
 
@@ -460,4 +460,6 @@ $$
 
     Reversing the substitutions and applying $\partial p^*/\partial y^* = 0 \Rightarrow \partial p/\partial y = 0$
     recovers the dimensional BL equations shown at the top of this page.
+
+[^liu_2021]: Liu, Z. (2021). Compressible Falkner–Skan–Cooke boundary layer on a flat plate. *Physics of Fluids*, 33(12). DOI: [10.1063/5.0075233](https://doi.org/10.1063/5.0075233)
 

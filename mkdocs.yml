@@ -20,6 +20,7 @@ edit_uri: edit/main/docs/
 # --------------------------------------------------
 theme:
   name: material
+  variant: classic  
   palette:
     - media: "(prefers-color-scheme)"
       toggle:
@@ -55,13 +56,12 @@ theme:
 # --------------------------------------------------
 plugins:
   - search
-  - bibtex:
-      bib_file: "docs/refs.bib"
 
 # --------------------------------------------------
 # markdown extensions
 # --------------------------------------------------
 markdown_extensions:
+  - footnotes
   - pymdownx.highlight:
       anchor_linenums: true
       linenums: true

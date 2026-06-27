@@ -1,6 +1,6 @@
 # Falkner-Skan-Cooke Equations
 
-The Falkner-Skan-Cooke (FSC) equations obtained by reducing the [quasi-3D compressible boundary layer equations](../boundary_layer_equations/quasi_3d_equations.md) to an ODE system [@liu_2021]. 
+The Falkner-Skan-Cooke (FSC) equations obtained by reducing the [quasi-3D compressible boundary layer equations](../boundary_layer_equations/quasi_3d_equations.md) to an ODE system [^liu_2021]. 
 
 ??? abstract "Inherited assumptions"
     - Steady, laminar flow with three velocity components $(u, v, w)$
@@ -22,13 +22,13 @@ $$\eta = \bar{\eta}\sqrt{\frac{m+1}{2}\frac{U_e}{\nu_{e0}\tilde{\xi}}},
 \psi = f(\eta)\sqrt{\frac{2\nu_{e0}U_e\tilde{\xi}}{m+1}}$$
 
 where $\nu_{e0} = \mu_{e0}/\rho_{e0}$ is the kinematic viscosity at the reference point.
-The normalized velocity components are [@liu_2021]:
+The normalized velocity components are [^liu_2021]:
 
 $$f'(\eta) = \frac{U}{U_e} = \frac{u}{u_e}, \qquad g(\eta) = \frac{w}{w_e}, \qquad \tau(\eta) = \frac{T}{T_e}$$
 
 ## Illingworth-Stewartson Transformation
 
-The IS transformation removes density from the governing equations [@liu_2021]:
+The IS transformation removes density from the governing equations [^liu_2021]:
 
 $$d\tilde{\xi} = \frac{\mu_e a_e \rho_e}{\mu_{e0} a_{e0} \rho_{e0}}\,dx,
 \qquad
@@ -62,7 +62,7 @@ $$
 where $\Lambda$ is the local swept angle and $M_e$ the local edge Mach number.
 
 !!! warning "Deviation from Liu (2021)"
-    [@liu_2021] defines $K$ and $S$ in terms of a reference Mach number $Ma_{e,\mathrm{ref}}$ and a
+    Liu [^liu_2021] defines $K$ and $S$ in terms of a reference Mach number $Ma_{e,\mathrm{ref}}$ and a
     streamwise parameter $\chi = (\tilde{\xi}/\tilde{\xi}_\mathrm{ref})^m$ that tracks the variation
     of edge conditions along the surface. Here we adopt a **locally self-similar** formulation, which
     sets $\chi = 1$ and consequently $Ma_{e,\mathrm{ref}} = M_e$. The parameters $\beta_H$, $K$, $S$,
@@ -71,7 +71,7 @@ where $\Lambda$ is the local swept angle and $M_e$ the local edge Mach number.
 
 ## ODE System
 
-**x-momentum** [@liu_2021]:
+**x-momentum** [^liu_2021]:
 
 $$(Cf'')' + ff'' + \beta_H(\tau - f'^2) = 0$$
 
@@ -80,11 +80,11 @@ $$(Cf'')' + ff'' + \beta_H(\tau - f'^2) = 0$$
 
     $$(Cf'')' + ff'' + \beta_H(\tau - f'^2) = 0$$
 
-**z-momentum** (crossflow) [@liu_2021]:
+**z-momentum** (crossflow) [^liu_2021]:
 
 $$(Cg')' + fg' = 0$$
 
-**Energy** [@liu_2021]:
+**Energy** [^liu_2021]:
 
 $$\begin{aligned}
 &\left(\frac{C}{\mathrm{Pr}}\tau'\right)'
@@ -122,3 +122,4 @@ $$f = 0, \qquad f' = 0, \qquad g = 0$$
 
 $$f' = 1, \qquad g = 1, \qquad \tau = 1$$
 
+[^liu_2021]: Liu, Z. (2021). Compressible Falkner–Skan–Cooke boundary layer on a flat plate. *Physics of Fluids*, 33(12). DOI: [10.1063/5.0075233](https://doi.org/10.1063/5.0075233)

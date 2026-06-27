@@ -1,7 +1,7 @@
 # Derivation (Illingworth-Stewartson)
 
 !!! note
-    This derivation uses the Illingworth-Stewartson transformation following [@liu_2021].
+    This derivation uses the Illingworth-Stewartson transformation following [^liu_2021].
     For the equivalent derivation using the Levy-Lees transformation,
     see [Derivation (Levy-Lees)](derivation.md).
 
@@ -42,7 +42,7 @@ $$u_e(x) = C x^m$$
 The spanwise edge velocity $w_e$ is **constant** along the chord (Cooke's independence
 principle: the spanwise momentum equation decouples and $w_e$ is a prescribed constant).
 
-**Dimensionless stream function** and normalized dependent variables [@liu_2021]:
+**Dimensionless stream function** and normalized dependent variables [^liu_2021]:
 
 $$\psi = \sqrt{2\xi}\,f(\eta), \qquad
 f'(\eta) = \frac{u}{u_e}, \qquad
@@ -157,7 +157,7 @@ $$
 $$
 
 !!! warning "Deviation from Liu (2021)"
-    [@liu_2021] defines $K$ and $S$ in terms of a reference Mach number $Ma_{e,\mathrm{ref}}$ and a
+    Liu [^liu_2021] defines $K$ and $S$ in terms of a reference Mach number $Ma_{e,\mathrm{ref}}$ and a
     streamwise parameter $\chi = (\tilde{\xi}/\tilde{\xi}_\mathrm{ref})^m$ that tracks the variation
     of edge conditions along the surface. Here we adopt a **locally self-similar** formulation, which
     sets $\chi = 1$ and consequently $Ma_{e,\mathrm{ref}} = M_e$. The parameters $\beta_H$, $K$, $S$,
@@ -554,3 +554,5 @@ $$f = 0, \qquad f' = 0, \qquad g = 0$$
 **Edge** ($\eta \to \infty$):
 
 $$f' = 1, \qquad g = 1, \qquad \tau = 1$$
+
+[^liu_2021]: Liu, Z. (2021). Compressible Falkner–Skan–Cooke boundary layer on a flat plate. *Physics of Fluids*, 33(12). DOI: [10.1063/5.0075233](https://doi.org/10.1063/5.0075233)

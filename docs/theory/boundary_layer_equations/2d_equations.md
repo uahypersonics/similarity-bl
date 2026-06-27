@@ -8,7 +8,7 @@
 ## Governing Equations
 
 The compressible laminar boundary layer equations for a calorically perfect gas
-are (see for example [@white_2006]<sup>,</sup>[@schlichting_2017]):
+are (see for example [^white_2006][^schlichting_2017]):
 
 **Continuity**
 
@@ -319,5 +319,8 @@ $$
     Reversing the substitutions ($u^* \to u/U_\infty$, $y^* \to y/\delta$, $p^* \to p/(\rho_\infty U_\infty^2)$, etc.)
     and applying $\partial p^*/\partial y^* = 0 \Rightarrow \partial p/\partial y = 0$ recovers the
     dimensional BL equations shown at the top of this page.
+
+[^white_2006]: White, F. M. (2006). *Viscous Fluid Flow*, 3rd ed. McGraw-Hill, New York.
+[^schlichting_2017]: Schlichting, H. & Gersten, K. (2017). *Boundary Layer Theory*, 9th ed. Springer. DOI: [10.1007/978-3-662-52919-5](https://doi.org/10.1007/978-3-662-52919-5)
 
 

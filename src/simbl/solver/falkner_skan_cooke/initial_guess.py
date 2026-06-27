@@ -3,7 +3,6 @@
 Owns:
 - FSC table configs (adiabatic + isothermal)
 - build_y0: shooting variables --> 7-element ODE initial condition
-- save_converged: extract wall values from converged FSC solution and update table
 - get_initial_guess: public entry point for predictions
 """
 
@@ -88,64 +87,6 @@ def build_y0(
         taup_0 = 0.0
 
     return np.array([0.0, 0.0, fpp_0, tau_0, taup_0, 0.0, gcfp_0])
-
-
-# --------------------------------------------------
-# save_converged: extract wall values from FSC solution and update table
-# --------------------------------------------------
-def save_converged(result: ShootingResult, problem: SimilarityInputs) -> None:
-    """Save converged FSC solution to lookup table
-
-    Extracts wall values from the FSC solution array and updates
-    the appropriate lookup table.
-
-    Parameters
-    ----------
-    result : ShootingResult
-        Converged shooting method result.
-    problem : SimilarityInputs
-        Physics specification (provides key field values).
-    """
-    config = _TABLE_CONFIGS[problem.wall_bc]
-
-    # initialize LookupTable (defined in lookup_table.py) for this wall BC type
-    # ** expands the config dict keys into keyword arguments for the LookupTable constructor
-    lookup = LookupTable(**_TABLE_CONFIGS[problem.wall_bc])
-
-    # key_map: superset of all possible key fields
-    # config["key_fields"] picks the relevant subset (e.g. adiabatic uses mach+beta+sweep, isothermal adds g_wall)
-    # FSC solution = [f, f', f'', tau, tau', g, g']
-    # Note: g_wall refers to T_wall/T_edge (tau), not crossflow
-    key_map = {
-        "mach": problem.mach_edge,
-        "beta": problem.beta,
-        "sweep_angle": problem.sweep_angle,
-        "g_wall": result.solution[3, 0],  # tau(0) = T_wall / T_edge
-    }
-
-    # get key values for this solution based on config
-    # for adiabatic: config["key_fields"] = ["mach", "beta", "sweep_angle"]
-    # for isothermal: config["key_fields"] = ["mach", "beta", "sweep_angle", "g_wall"]
-    key_values = {k: key_map[k] for k in config["key_fields"]}
-
-    # val_map: superset of all possible value fields
-    # config["value_fields"] picks the relevant subset (e.g. adiabatic stores g_wall, isothermal stores gp_wall)
-    # FSC solution = [f, f', f'', tau, tau', g, g']
-    # Note: g_wall and gp_wall refer to T_wall/T_edge (tau), not crossflow
-    val_map = {
-        "fpp_wall": result.solution[2, 0],
-        "gcfp_wall": result.solution[6, 0],
-        "g_wall": result.solution[3, 0],      # tau(0) = T_wall / T_edge
-        "gp_wall": result.solution[4, 0],     # tau'(0) = dT/deta at wall
-    }
-
-    # get values for this solution based on config
-    # for adiabatic: config["value_fields"] = ["fpp_wall", "gcfp_wall", "g_wall"]
-    # for isothermal: config["value_fields"] = ["fpp_wall", "gcfp_wall", "gp_wall"]
-    values = {v: val_map[v] for v in config["value_fields"]}
-
-    # update lookup table with this converged solution
-    lookup.update(key_values=key_values, values=values)
 
 
 # --------------------------------------------------

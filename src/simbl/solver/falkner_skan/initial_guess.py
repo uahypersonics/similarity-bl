@@ -3,7 +3,6 @@
 Owns:
 - FS table configs (adiabatic + isothermal)
 - build_y0: shooting variables --> 5-element ODE initial condition
-- save_converged: extract wall values from converged FS solution and update table
 - get_initial_guess: public entry point for predictions
 """
 
@@ -86,62 +85,6 @@ def build_y0(
         gp_0 = 0.0
 
     return np.array([0.0, 0.0, fpp_0, g_0, gp_0])
-
-
-# --------------------------------------------------
-# save_converged: extract wall values from FS solution and update appropriate table
-# --------------------------------------------------
-def save_converged(result: ShootingResult, problem: SimilarityInputs) -> None:
-    """Save converged FS solution to lookup table
-
-    Extracts wall values from the FS solution array and updates
-    the appropriate lookup table.
-
-    Parameters
-    ----------
-    result : ShootingResult
-        Converged shooting method result.
-    problem : SimilarityInputs
-        Physics specification (provides key field values).
-    """
-
-    # get table config for this wall_bc type (e.g. adiabatic vs isothermal)
-    config = _TABLE_CONFIGS[problem.wall_bc]
-
-    # initialize LookupTable (defined in lookup_table.py) for this wall BC type
-    # ** expands the config dict keys into keyword arguments for the LookupTable constructor
-    lookup = LookupTable(**_TABLE_CONFIGS[problem.wall_bc])
-
-    # key_map: superset of all possible key fields
-    # config["key_fields"] picks the relevant subset (e.g. adiabatic uses mach+beta, isothermal adds g_wall)
-    # FS solution = [f, f', f'', g, g']
-    key_map = {
-        "mach": problem.mach_edge,
-        "beta": problem.beta,
-        "g_wall": result.solution[3, 0],
-    }
-
-    # get key values for this solution based on config
-    # for adiabatic: config["key_fields"] = ["mach", "beta"]
-    # for isothermal: config["key_fields"] = ["mach", "beta", "g_wall"]
-    key_values = {k: key_map[k] for k in config["key_fields"]}
-
-    # val_map: superset of all possible value fields
-    # config["value_fields"] picks the relevant subset (e.g. adiabatic stores g_wall, isothermal stores gp_wall)
-    # FS solution = [f, f', f'', g, g']
-    val_map = {
-        "fpp_wall": result.solution[2, 0],
-        "g_wall": result.solution[3, 0],
-        "gp_wall": result.solution[4, 0],
-    }
-
-    # get values for this solution based on config
-    # for adiabatic: config["value_fields"] = ["fpp_wall", "g_wall"]
-    # for isothermal: config["value_fields"] = ["fpp_wall", "gp_wall"]
-    values = {v: val_map[v] for v in config["value_fields"]}
-
-    # update lookup table with this converged solution
-    lookup.update(key_values=key_values, values=values)
 
 
 # --------------------------------------------------

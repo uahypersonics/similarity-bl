@@ -177,24 +177,6 @@ def solve_similarity(
     result = shooting_method(solver_problem, options)
 
     # --------------------------------------------------
-    # save initial guess to lookup table if solution converged
-    # this allows building a database of converged solutions for different Mach/temp/wall BCs
-    # which can be used as initial guesses for future solves to improve convergence
-    # --------------------------------------------------
-    if result.converged:
-
-        # load model specific save_converged function (saves to JSON in lookup table directory)
-        if equations == "falkner_skan":
-            # falkner-skan: initial guess consists of f''(0) and g(0) or g'(0) depending on wall BC type
-            from simbl.solver.falkner_skan.initial_guess import save_converged
-        else:
-            # falkner-skan-cooke: initial guess consists of f''(0), w'(0), and g(0) or g'(0) depending on wall BC type
-            from simbl.solver.falkner_skan_cooke.initial_guess import save_converged
-
-        # save the converged solution to the lookup table for future use as an initial guess
-        save_converged(result, problem)
-
-    # --------------------------------------------------
     # build model-specific solution dataclass
     # --------------------------------------------------
     return build_solution(result), result
