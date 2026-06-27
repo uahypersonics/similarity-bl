@@ -11,19 +11,10 @@ Owns:
 # --------------------------------------------------
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 import numpy as np
 from numpy.typing import NDArray
 
 from simbl.solver.lookup_table import LookupTable
-
-# imports only used in type annotations, not at runtime (improved performance)
-# avoids circular imports between solver modules
-if TYPE_CHECKING:
-    from simbl.solver.inputs import SimilarityInputs
-    from simbl.solver.shooting import ShootingResult
-
 
 # --------------------------------------------------
 # table configurations (Falkner-Skan, 2 shooting variables)
