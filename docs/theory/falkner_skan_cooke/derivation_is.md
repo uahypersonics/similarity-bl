@@ -542,40 +542,6 @@ This is the FSC analog of the
 $\Lambda = 0$ makes $2(S-1) \to (\gamma-1)M_e^2$ and drops the crossflow term, recovering
 $(C/\mathrm{Pr}\,\tau')' + f\tau' + (\gamma-1)M_e^2[Cf''^2 - \beta_H\tau f'] = 0$.
 
-!!! danger "Discrepancy with the stated ODE system"
-    The [FSC ODE system](index.md#ode-system) and
-    [reduction of order](reduction_of_order.md) list the energy equation in
-    **total-temperature (stagnation-enthalpy)** form:
-
-    $$\left(\frac{C}{\mathrm{Pr}}\tau'\right)'
-    + (S-1)\left(C(f'^2)'\right)'
-    + (K-1)S\left(C(g^2)'\right)'
-    + f\!\left[\tau' + (S-1)(f'^2)' + (K-1)S(g^2)'\right] = 0$$
-
-    Since $(S-1)f'^2 = u^2/(2c_pT_e)$ and $(K-1)Sg^2 = w^2/(2c_pT_e)$, the convected
-    bracket $\tau + (S-1)f'^2 + (K-1)Sg^2 = T_0/T_e$ is the total-temperature ratio, so
-    this is a stagnation-enthalpy reorganization of the energy equation.
-
-    Expanding that form and substituting the x-momentum ODE
-    $(Cf'')' + ff'' + \beta_H(\tau - f'^2) = 0$ and the z-momentum ODE
-    $(Cg')' + fg' = 0$ reduces it to
-
-    $$\left(\frac{C}{\mathrm{Pr}}\tau'\right)' + f\tau'
-    + 2(S-1)\!\left[Cf''^2 - \beta_H\tau f'\right]
-    + 2(K-1)S\,Cg'^2
-    \;+\; 2(S-1)\beta_H f'^3 = 0$$
-
-    i.e. it differs from the directly-derived static-temperature result above by the term
-
-    $$2(S-1)\beta_H f'^3 = (\gamma-1)M_e^2\cos^2\!\Lambda\;\beta_H f'^3,$$
-
-    which does **not** vanish on solutions (it is not a multiple of either momentum
-    residual). The boxed static-temperature equation is the form that follows directly from
-    the quasi-3D energy equation and is consistent with the convention used for the
-    [Falkner-Skan energy equation](../falkner_skan/index.md#ode-system). The
-    stagnation-enthalpy form in `index.md` carries this extra term; per the task this is
-    reported rather than absorbed by forcing the algebra.
-
 ### Boundary Conditions
 
 **Wall** ($\eta = 0$):

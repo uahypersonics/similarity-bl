@@ -93,6 +93,22 @@ $$\begin{aligned}
 &\quad + f\!\left[\tau' + (S-1)(f'^2)' + (K-1)S(g^2)'\right] = 0
 \end{aligned}$$
 
+??? note "Compare to Falkner-Skan"
+    The [Falkner-Skan energy equation](../falkner_skan/index.md#ode-system) is:
+
+    $$\left(\frac{C}{\mathrm{Pr}}\tau'\right)' + f\tau' + (\gamma-1)M_e^2\!\left[Cf''^2 - \beta_H\tau f'\right] = 0$$
+
+    Setting $\Lambda = 0$ (no sweep angle) gives $K = 1$, so the crossflow kinetic energy
+    terms $(K-1)S(\cdot)$ vanish and $g \equiv 0$.  The FSC energy equation reduces to:
+
+    $$\left(\frac{C}{\mathrm{Pr}}\tau'\right)'
+    + (S-1)\left(C(f'^2)'\right)'
+    + f\!\left[\tau' + (S-1)(f'^2)'\right] = 0$$
+
+    This is a **total-temperature** (stagnation-enthalpy) form with $S = (\gamma-1)M_e^2$.
+    The Falkner-Skan equation above is the equivalent **static-temperature** form — the two
+    are related by substituting the x-momentum ODE into the energy equation.
+
 ## Boundary Conditions
 
 **Wall** ($\eta = 0$):
