@@ -1,0 +1,7 @@
+{
+  "metadata": {
+    "description": "Grid points where the solver did not converge.",
+    "count": 0
+  },
+  "failed_points": []
+}

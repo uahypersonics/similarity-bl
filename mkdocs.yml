@@ -126,10 +126,13 @@ nav:
       - 2D: theory/boundary_layer_equations/2d_equations.md
       - 3D: theory/boundary_layer_equations/3d_equations.md
       - Quasi-3D: theory/boundary_layer_equations/quasi_3d_equations.md
-    - Similarity to Physical Coordinate Transform:
-      - theory/similarity_to_physical_coordinate_transform/index.md
-      - Levy-Lees: theory/similarity_to_physical_coordinate_transform/levy_lees.md
-      - Illingworth-Stewartson: theory/similarity_to_physical_coordinate_transform/illingworth_stewartson.md
+      - Axisymmetric: theory/boundary_layer_equations/axisymmetric_equations.md
+    - Coordinate Transformations:
+      - Similarity to Physical (η → y):
+        - theory/similarity_to_physical_coordinate_transform/index.md
+        - Levy-Lees: theory/similarity_to_physical_coordinate_transform/levy_lees.md
+        - Illingworth-Stewartson: theory/similarity_to_physical_coordinate_transform/illingworth_stewartson.md
+      - Axisymmetric to 2D (Mangler): theory/boundary_layer_equations/mangler.md
     - Falkner-Skan:
       - theory/falkner_skan/index.md
       - Derivation (Levy-Lees): theory/falkner_skan/derivation.md

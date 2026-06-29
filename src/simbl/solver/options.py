@@ -41,6 +41,8 @@ class SolverOptions:
         Factor to reduce epsilon by when the Jacobian is singular. Default 0.5.
     equations : str, optional
         Governing equations: 'falkner_skan' (2D) or 'falkner_skan_cooke' (3D). Default 'falkner_skan'.
+    max_solve_time : float, optional
+        Maximum wall-clock time [seconds] for the entire shooting method call. Default 20.0.
 
     Examples
     --------
@@ -77,6 +79,11 @@ class SolverOptions:
     relaxation_factor: float = 0.5
     # governing equations to solve
     equations: str = "falkner_skan"
+    # maximum wall-clock time [seconds] for the entire shooting method call.
+    # the Newton loop checks elapsed time after each iteration and aborts early
+    # if this limit is exceeded.  default 20 s is well within the 30 s process
+    # timeout used by the lookup table generator.
+    max_solve_time: float = 20.0
 
     # --------------------------------------------------
     # post-init validation (runs automatically after dataclass __init__)

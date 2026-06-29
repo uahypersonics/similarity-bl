@@ -95,29 +95,42 @@ def cmd_solve(
     from simbl.io import write
     from simbl.solver import solve_similarity
 
+    # --------------------------------------------------
     # load config file
-    # resolve which config file to use: explicit argument, then auto-discovered default
+    # --------------------------------------------------
+
+    # resolve which config file to use:
+    # first: explicit argument, then auto-discovered default
     if config is not None:
+        # explicit config file argument takes precedence
         config_path = Path(config)
     else:
+        # no explicit config file argument, try to find default in current directory
         config_path = Path(DEFAULT_CONFIG) if Path(DEFAULT_CONFIG).exists() else None
 
+    # if no config file is found, print an error and exit
     if config_path is None:
         typer.echo("No configuration file found.", err=True)
         typer.echo("  Run `simbl init` to generate a template, or pass a config file as an argument.", err=True)
         raise typer.Exit(1)
 
+    # if the config file path does not exist, print an error and exit
     if not config_path.exists():
         typer.echo(f"Config file not found: {config_path}", err=True)
         raise typer.Exit(1)
 
+    # try to load the config file, catch any exceptions and print an error message
     try:
         cfg = config_load(config_path)
     except Exception as error:
         typer.echo(f"Error parsing {config_path}: {error}", err=True)
         raise typer.Exit(1) from None
 
-    # apply cli overrides via mutable dict
+    # --------------------------------------------------
+    # apply cli overrides
+    # --------------------------------------------------
+
+    # convert cfg pydantic model to dict to more easily apply overrides
     cfg_dict = cfg.model_dump()
     if mach is not None:
         cfg_dict["conditions"]["mach_edge"] = mach
@@ -136,24 +149,37 @@ def cmd_solve(
     if n_points is not None:
         cfg_dict["numerics"]["n_points"] = n_points
 
-    # re-validate the config with the cli overrides applied, to catch any errors in the overrides
+    # --------------------------------------------------
+    # validate the config with the cli overrides applied
+    # --------------------------------------------------
+
+    # to catch any errors in the overrides
     try:
+        # provide dict to pydantic model
+        # ** to unpack the dict into keyword arguments
         cfg = SolverConfig(**cfg_dict)
     except Exception as error:
         typer.echo(f"Invalid configuration: {error}", err=True)
         raise typer.Exit(1) from None
 
     # convert validated config to solver inputs and run
+    # the config is split up into problem specification and solver options for user convenience
     problem, options = config_to_inputs(cfg)
 
-    # run the solver, catch any exceptions and print an error message
+    # --------------------------------------------------
+    # run the solver
+    # --------------------------------------------------
+
     try:
         sol, info = solve_similarity(problem, options)
     except Exception as error:
         typer.echo(f"Solver error: {error}", err=True)
         raise typer.Exit(1) from None
 
+    # --------------------------------------------------
     # print summary to console
+    # --------------------------------------------------
+
     if not quiet:
         typer.echo(f"Mach = {problem.mach_edge}, beta = {problem.beta}, wall = {problem.wall_bc}")
         typer.echo(f"  f''(0) = {sol.fpp[0]:.6f}")
@@ -163,8 +189,18 @@ def cmd_solve(
         if hasattr(sol, "gp"):
             typer.echo(f"  g'(0)  = {sol.gp[0]:.6f}")
         typer.echo(f"  Converged: {info.converged} ({info.iterations} iterations)")
+        if info.timed_out:
+            typer.echo(
+                "warning: solve timed out - increase max_solve_time in [numerics] if this case should converge",
+                err=True,
+            )
+        elif not info.converged:
+            typer.echo("warning: solve did not converge", err=True)
 
+    # --------------------------------------------------
     # write output file
+    # --------------------------------------------------
+
     try:
         write(sol, output, problem=problem, shooting_result=info)
     except Exception as error:

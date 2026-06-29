@@ -100,6 +100,11 @@ class NumericsConfig(BaseModel):
     tolerance: float = Field(default=1e-8, gt=0, description="Convergence tolerance")
     max_iterations: int = Field(default=100, gt=0, description="Maximum iterations")
     ode_method: str = Field(default="LSODA", description="ODE integrator method")
+    max_solve_time: float = Field(
+        default=20.0,
+        gt=0,
+        description="Maximum wall-clock time [s] for one solve_similarity call",
+    )
 
 
 # --------------------------------------------------

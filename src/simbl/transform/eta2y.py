@@ -231,6 +231,9 @@ def _resolve_transform_name(transform: str | None, equations: str | None) -> str
     return transform_key
 
 
+# --------------------------------------------------
+# helper function to integrate dy/deta = tau / eta_scale
+# --------------------------------------------------
 def _integrate_tau_over_eta(
     eta: NDArray[np.float64],
     tau: NDArray[np.float64],
@@ -239,10 +242,16 @@ def _integrate_tau_over_eta(
     """Integrate dy/deta = tau / eta_scale."""
 
     # integrate dy/deta = tau / eta_scale using a cumulative trapezoid rule
+
+    # compute delta_eta
     delta_eta = np.diff(eta)
+    # compute average tau for each segment
     average_tau = 0.5 * (tau[1:] + tau[:-1])
+    # compute integral for each segment
     segment_integrals = average_tau * delta_eta
+    # compute cumulative integral
     cumulative_integral = np.concatenate(([0.0], np.cumsum(segment_integrals)))
+    # scale by eta_scale
     y = cumulative_integral / eta_scale
 
     return y

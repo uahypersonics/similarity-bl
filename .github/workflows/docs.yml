@@ -32,7 +32,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install zensical mkdocstrings[python]
+          pip install zensical
           pip install -e .
 
       - name: Build documentation

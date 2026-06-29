@@ -71,7 +71,9 @@ def build_solver_problem(
 
         # build key_values dict for lookup table
         key_values = {"mach": problem.mach_edge, "beta": problem.beta, "sweep_angle": problem.sweep_angle}
-        if problem.wall_bc == "isothermal":
+        if problem.wall_bc == "adiabatic":
+            key_values["temp_edge"] = problem.temp_edge
+        elif problem.wall_bc == "isothermal":
             key_values["g_wall"] = problem.g_wall
 
         # get initial guess from lookup table based on problem parameters (wired in initial_guess module)
@@ -84,6 +86,17 @@ def build_solver_problem(
             guess[1] = initial_wp
         if initial_gvar is not None:
             guess[2] = initial_gvar
+
+        # for adiabatic walls, override the lookup-table g_wall estimate with the
+        # analytical recovery temperature formula.  The shipped table was generated at
+        # T_edge=300 K; at other T_edge values the IDW prediction is inaccurate because
+        # Sutherland viscosity is non-linear in absolute temperature.
+        # The recovery formula is a reliable starting point for all Mach / T_edge combos.
+        if problem.wall_bc == "adiabatic":
+            # recovery factor r ~ Pr^(1/3) for turbulent; use same value for laminar FS
+            r = problem.prandtl ** (1.0 / 3.0)
+            g_wall_est = 1.0 + r * (problem.gamma - 1.0) / 2.0 * problem.mach_edge**2
+            guess[2] = g_wall_est
 
     # --------------------------------------------------
     # ODE setup: precompute loop-invariant parameters S and K, then bind

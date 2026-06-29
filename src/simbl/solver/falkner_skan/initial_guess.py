@@ -25,7 +25,7 @@ from simbl.solver.lookup_table import LookupTable
 # --------------------------------------------------
 _TABLE_CONFIGS: dict[str, dict] = {
     "adiabatic": {
-        "key_fields": ["mach", "beta"],
+        "key_fields": ["mach", "beta", "temp_edge"],
         "value_fields": ["fpp_wall", "g_wall"],
         "default_values": [0.55, 3.0],
         "fname": "lookup_fs_adiabatic.json",

@@ -52,6 +52,35 @@ coefficient multiplying $1/\tau$ after the coordinate transform has been
 differentiated. Its exact definition is different for the Levy-Lees and
 Illingworth-Stewartson transforms.
 
+??? note "Levy-Lees: η definition and η_s"
+
+    $$
+    \eta = \sqrt{\frac{(m+1)\rho_e u_e}{2\mu_e x}}\int_0^y \frac{\rho}{\rho_e}\,dy'
+    $$
+
+    Differentiating with respect to $y$ and substituting $\rho/\rho_e = 1/\tau$:
+
+    $$
+    \frac{\partial\eta}{\partial y} = \frac{1}{\tau}\underbrace{\sqrt{\frac{(m+1)\rho_e u_e}{2\mu_e x}}}_{\eta_{s,LL}}
+    $$
+
+??? note "Illingworth-Stewartson: η definition and η_s"
+
+    $$
+    \eta = \sqrt{\frac{(m+1)u_e}{2\nu_{ref}x}}\int_0^y \frac{\rho}{\rho_e}\,dy'
+    $$
+
+    where $\nu_{ref} = \mu_{ref}/\rho_{ref}$ is a prescribed reference kinematic viscosity
+    (defaults to the local edge value $\nu_e = \mu_e/\rho_e$).
+
+    Differentiating with respect to $y$ and substituting $\rho/\rho_e = 1/\tau$:
+
+    $$
+    \frac{\partial\eta}{\partial y} = \frac{1}{\tau}\underbrace{\sqrt{\frac{(m+1)u_e}{2\nu_{ref}x}}}_{\eta_{s,IS}}
+    $$
+
+    With the default reference state ($\nu_{ref} = \nu_e$), $\eta_{s,IS} = \eta_{s,LL}$.
+
 Inverting gives
 
 $$

@@ -1,0 +1,28 @@
+# Mach 6 swept flat plate - 45 deg sweep, Falkner-Skan-Cooke equations
+# run: simbl solve swept_plate_mach6.toml
+
+equations = "falkner_skan_cooke"
+
+[conditions]
+mach_edge = 6.0
+temp_edge = 68.0
+beta = 0.0
+sweep_angle = 45.0
+
+[gas]
+gamma = 1.4
+prandtl = 0.72
+
+[wall]
+type = "adiabatic"
+
+[viscosity]
+model = "sutherland"
+
+[numerics]
+eta_max = 15.0
+n_points = 500
+tolerance = 1e-8
+max_iterations = 100
+ode_method = "LSODA"
+max_solve_time = 20.0

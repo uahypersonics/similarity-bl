@@ -20,6 +20,7 @@ except ImportError as exc:  # pragma: no cover
 # package imports
 # --------------------------------------------------
 from simbl.cli.eta2y import cmd_eta2y
+from simbl.cli.examples import cmd_examples
 from simbl.cli.init import cmd_init
 from simbl.cli.solve import cmd_solve
 
@@ -39,7 +40,7 @@ from simbl.cli.solve import cmd_solve
 # --------------------------------------------------
 cli = typer.Typer(
     name="simbl",
-    help="SIMBL - Compressible Similarity Boundary Layer Solver",
+    help="simbl: compressible similarity boundary layer solver",
     no_args_is_help=True,
     add_completion=False,
 )
@@ -113,6 +114,7 @@ def main(
 cli.command("init")(cmd_init)
 cli.command("solve")(cmd_solve)
 cli.command("eta2y")(cmd_eta2y)
+cli.command("examples")(cmd_examples)
 
 
 # --------------------------------------------------

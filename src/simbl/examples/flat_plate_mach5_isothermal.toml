@@ -1,0 +1,29 @@
+# Mach 5 isothermal flat plate - cold wall T_wall = 300 K, T_edge = 68 K
+# Matches the ogive V&V case boundary conditions
+# run: simbl solve flat_plate_mach5_isothermal.toml
+
+equations = "falkner_skan"
+
+[conditions]
+mach_edge = 5.0
+temp_edge = 68.0
+beta = 0.0
+
+[gas]
+gamma = 1.4
+prandtl = 0.72
+
+[wall]
+type = "isothermal"
+temp_wall = 300.0
+
+[viscosity]
+model = "sutherland"
+
+[numerics]
+eta_max = 15.0
+n_points = 500
+tolerance = 1e-8
+max_iterations = 100
+ode_method = "LSODA"
+max_solve_time = 20.0

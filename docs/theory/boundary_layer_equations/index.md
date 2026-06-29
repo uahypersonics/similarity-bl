@@ -11,3 +11,4 @@ Falkner-Skan-Cooke). Symbol definitions are collected in the [Nomenclature](../.
 |---|---|
 | [2D Boundary Layer](2d_equations.md) | Continuity, streamwise momentum, energy in two dimensions |
 | [3D Boundary Layer](3d_equations.md) | Adds a crossflow momentum equation for swept/yawed geometries |
+| [Axisymmetric Boundary Layer](axisymmetric_equations.md) | BL equations for a body of revolution |

@@ -181,6 +181,7 @@ def config_to_inputs(config: SolverConfig) -> tuple[SimilarityInputs, SolverOpti
         tolerance=config.numerics.tolerance,
         max_iterations=config.numerics.max_iterations,
         ode_method=config.numerics.ode_method,
+        max_solve_time=config.numerics.max_solve_time,
         equations=config.equations,
     )
 

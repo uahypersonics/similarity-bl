@@ -10,6 +10,7 @@ through the SolverProblem abstraction.
 # --------------------------------------------------
 from __future__ import annotations
 
+import time
 from collections.abc import Callable
 from dataclasses import dataclass
 
@@ -61,6 +62,8 @@ class ShootingResult:
 
     converged: bool
     """Indicates whether the solution converged within the specified tolerance and iteration limit"""
+    timed_out: bool
+    """True when the shooting method aborted because max_solve_time was exceeded"""
     iterations: int
     """Number of iterations required for convergence (or max iterations if not converged)"""
     eta: NDArray[np.float64]
@@ -116,6 +119,20 @@ def shooting_method(
     # initialize shooting variables
     s = solver_problem.initial_guess.copy()
 
+    # wall-clock deadline for the whole shooting call.
+    # once the budget is spent, the next derivative
+    # evaluation raises and aborts that integration cleanly.
+    t_shoot_start = time.monotonic()
+    deadline = t_shoot_start + options.max_solve_time
+
+    class _SolveTimeout(Exception):
+        """Raised from the ODE RHS when the wall-clock budget is exhausted."""
+
+    def _timed_ode(eta_val: float, y: NDArray[np.float64]) -> NDArray[np.float64]:
+        if time.monotonic() > deadline:
+            raise _SolveTimeout
+        return solver_problem.ode_function(eta_val, y)
+
     def _integrate(s_guess, *, edge_only=False):
         """Integrate ODE with trial shooting variables.
 
@@ -136,7 +153,7 @@ def shooting_method(
 
         try:
             sol = solve_ivp(
-                solver_problem.ode_function,
+                _timed_ode,
                 (0, options.eta_max),
                 y0,
                 method=options.ode_method,
@@ -144,22 +161,23 @@ def shooting_method(
                 rtol=options.tolerance,
                 atol=options.tolerance,
             )
-        except (ValueError, OverflowError):
+        except (ValueError, OverflowError, _SolveTimeout):
             return _FailedSol()
 
         if not sol.success:
             # fallback: BDF is an implicit method, more stable for stiff ODEs
             try:
                 sol = solve_ivp(
-                    solver_problem.ode_function,
+                    _timed_ode,
                     (0, options.eta_max),
                     y0,
                     method="BDF",
                     t_eval=points,
                     rtol=options.tolerance,
                     atol=options.tolerance,
+                    max_step=options.eta_max / 50,
                 )
-            except (ValueError, OverflowError):
+            except (ValueError, OverflowError, _SolveTimeout):
                 return _FailedSol()
         return sol
 
@@ -178,12 +196,20 @@ def shooting_method(
 
     # initialize convergence flag
     converged = False
+    # flag set when the wall-clock limit aborts the loop before convergence
+    timed_out = False
     # initialize iteration counter
     iteration = 0
     # initialize residual vector
     F = np.zeros(solver_problem.n_shooting)
 
     for iteration in range(1, options.max_iterations + 1):  # noqa: B007
+
+        # check wall-clock limit before doing any work this iteration
+        # (t_shoot_start / deadline are set above, before the integrator helper)
+        if time.monotonic() > deadline:
+            timed_out = True
+            break  # converged stays False; loop exits cleanly
 
         # integrate ODE with current shooting variables
         sol = _integrate(s)
@@ -290,6 +316,7 @@ def shooting_method(
     # -------------------------------------------------
     return ShootingResult(
         converged=converged,
+        timed_out=timed_out,
         iterations=iteration,
         eta=eta,
         solution=sol.y,

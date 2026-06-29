@@ -46,7 +46,7 @@ The CI pipeline runs both checks automatically. See the code style table in
 ## Building the Documentation
 
 ```
-mkdocs serve
+zensical serve
 ```
 
 This starts a local server at `http://127.0.0.1:8000` where you can preview changes

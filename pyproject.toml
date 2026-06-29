@@ -41,9 +41,7 @@ dev = [
     "pytest>=7.0",
     "pytest-cov>=4.0",
     "ruff>=0.1.0",
-    "mkdocs-material>=9.0",
-    "mkdocstrings[python]>=0.24",
-    "mkdocs-bibtex>=2.0",
+    "zensical",
 ]
 
 [project.scripts]
@@ -58,7 +56,7 @@ Documentation = "https://uahypersonics.github.io/similarity-bl"
 where = ["src"]
 
 [tool.setuptools.package-data]
-simbl = ["data/*.json"]
+simbl = ["data/*.json", "examples/*.toml"]
 
 [tool.setuptools_scm]
 
