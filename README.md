@@ -84,8 +84,13 @@ This project uses [Semantic Versioning](https://semver.org/) (`vMAJOR.MINOR.PATC
 
 To publish a new version to [PyPI](https://pypi.org/project/similarity-bl/):
 
-1. Commit and push to `main`
-2. Tag and push:
+1. Verify locally and fix any errors before cutting the release:
+   ```bash
+   ruff check .
+   pytest
+   ```
+2. Commit and push to `main`
+3. Tag and push:
    ```bash
    git tag -a vMAJOR.MINOR.PATCH -m "Release vMAJOR.MINOR.PATCH"
    git push origin vMAJOR.MINOR.PATCH
