@@ -17,7 +17,6 @@ Proc. Cambridge Phil. Soc., 33(2), 223-239.
 # load necessary modules
 # --------------------------------------------------
 import sys
-from dataclasses import replace
 from pathlib import Path
 
 import matplotlib as mpl
