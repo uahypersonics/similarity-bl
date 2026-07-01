@@ -11,6 +11,7 @@ through the SolverProblem abstraction.
 from __future__ import annotations
 
 import time
+import warnings
 from collections.abc import Callable
 from dataclasses import dataclass
 
@@ -74,6 +75,25 @@ class ShootingResult:
     """Converged shooting variable values at the wall (e.g., f''(0), g(0) or g'(0))"""
     residual: NDArray[np.float64]
     """Final residual vector at the edge (should be close to zero if converged)"""
+
+    # special method (dunder): controls how the object is printed / repr'd
+    def __repr__(self) -> str:
+
+        # format shooting variables and residual as compact inline lists
+        svars = ", ".join(f"{v:.6g}" for v in self.shooting_vars)
+        resid = ", ".join(f"{v:.3e}" for v in self.residual)
+        # build a readable multi-line block
+        lines = [
+            "ShootingResult",
+            f"  converged   : {self.converged}",
+            f"  timed_out   : {self.timed_out}",
+            f"  iterations  : {self.iterations}",
+            f"  eta range   : [{self.eta[0]:.4g}, {self.eta[-1]:.4g}]  ({len(self.eta)} points)",
+            f"  solution    : shape {self.solution.shape}",
+            f"  shoot vars  : [{svars}]",
+            f"  residual    : [{resid}]",
+        ]
+        return "\n".join(lines)
 
 
 # --------------------------------------------------
@@ -310,6 +330,25 @@ def shooting_method(
     # final integration with converged shooting variables
     #--------------------------------------------------
     sol = _integrate(s)
+
+    # --------------------------------------------------
+    # post-convergence physical plausibility check
+    #
+    # a genuine asymptotic solution has f''(eta_max) -> 0 as the velocity
+    # profile flattens to the freestream value.  a large f''(eta_max) means
+    # Newton converged to a spurious oscillatory branch that satisfies the
+    # far-field BC at one point by coincidence, not by asymptotic decay.
+    # --------------------------------------------------
+    if converged and abs(sol.y[2, -1]) >= options.fpp_edge_threshold:
+        fpp_edge_val = float(sol.y[2, -1])
+        warnings.warn(
+            f"Possible spurious solution: f''(eta_max) = {fpp_edge_val:.4f} "
+            f"exceeds threshold {options.fpp_edge_threshold}. "
+            "Newton may have converged to a non-physical oscillatory branch. "
+            "Consider using a better initial guess or beta-continuation.",
+            stacklevel=3,
+        )
+        converged = False
 
     # -------------------------------------------------
     # package results into ShootingResult dataclass for convenient access by caller

@@ -17,7 +17,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 # --------------------------------------------------
-# package data path — tables shipped with the wheel (read-only)
+# package data path: tables shipped with the wheel (read only)
 # --------------------------------------------------
 _PACKAGE_DATA = files("simbl") / "data"
 
@@ -34,7 +34,7 @@ class LookupTable:
     - Falkner-Skan-Cooke with adiabatic wall
     - Falkner-Skan-Cooke with isothermal wall
 
-    Seed data is shipped with the package and is read-only.
+    Seed data is shipped with the package and is read only.
 
     Parameters
     ----------
@@ -50,6 +50,8 @@ class LookupTable:
 
     # --------------------------------------------------
     # initialization of LookupTable instance
+    #
+    # __init__() is called automatically when creating a new instance of the LookupTable class.
     # --------------------------------------------------
     def __init__(
         self,
@@ -63,20 +65,28 @@ class LookupTable:
         self.default_values = np.array(default_values, dtype=np.float64)
         self.fname = fname
 
-        # internal storage
         # _entries: raw dicts from JSON
-        # _points: shape (n_entries, n_key_fields) for distance computation
-        # _values: shape (n_entries, n_value_fields) for interpolation
-        # _scale:  shape (n_key_fields,) — 1/range per dimension, unit if range is zero
+        # initialize as empty list; will be populated by _load() if package data is available
         self._entries: list[dict] = []
+
+        # _points: shape (n_entries, n_key_fields) for distance computation
+        # initialize as empty array; will be populated by _build_arrays() if entries are loaded
         self._points: NDArray[np.float64] = np.empty((0, len(key_fields)))
+
+        # _values: shape (n_entries, n_value_fields) for interpolation
+        # initialize as empty array; will be populated by _build_arrays() if entries are loaded
         self._values: NDArray[np.float64] = np.empty((0, len(value_fields)))
+
+        # _scale:  shape (n_key_fields,)
+        # 1/range per dimension, unit if range is zero -> used to normalize distances for inverse-distance weighting
+        # initialize as ones; will be populated by _build_arrays() if entries are loaded
         self._scale: NDArray[np.float64] = np.ones(len(key_fields))
 
+        # load table from package data
         self._load()
 
     # --------------------------------------------------
-    # magic method for len()
+    # special method (dunder): supports len(table)
     #
     # returns number of entries in the table when using the len() command on a LookupTable instance
     # --------------------------------------------------
@@ -84,7 +94,7 @@ class LookupTable:
         return len(self._entries)
 
     # --------------------------------------------------
-    # magic method for repr()
+    # special method (dunder): controls how the object is printed / repr'd
     #
     # returns file name and number of entries when using the print() command on a LookupTable instance
     # --------------------------------------------------
@@ -100,7 +110,10 @@ class LookupTable:
             # use read_text + json.loads because package data may be inside a zip/wheel
             text = (_PACKAGE_DATA / self.fname).read_text(encoding="utf-8")
             data = json.loads(text)
+
+            # load entries from JSON data (list of dicts) -> all entries in the json files contain the actual converged initial guesses for the given key fields
             self._entries = data.get("entries", [])
+
         except (FileNotFoundError, TypeError):
             # no package data found, predict() will use default_values instead
             pass
@@ -137,7 +150,7 @@ class LookupTable:
             points.append([e[k] for k in self.key_fields])
             values.append([e[v] for v in self.value_fields])
 
-        # all entries were stale — leave arrays empty, predict() falls back to default_values
+        # if no points were valid leave arrays empty, predict() falls back to default_values
         if not points:
             return
 

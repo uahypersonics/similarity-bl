@@ -16,31 +16,9 @@ from numpy.typing import NDArray
 
 from simbl.solver.lookup_table import LookupTable
 
-# --------------------------------------------------
-# table configurations (Falkner-Skan, 2 shooting variables)
-#
-# g_wall is a value (unknown) for adiabatic, but a key (prescribed) for isothermal
-# adiabatic:  key = (mach, beta),          values = (fpp_wall, g_wall)
-# isothermal: key = (mach, beta, g_wall),  values = (fpp_wall, gp_wall)
-# --------------------------------------------------
-_TABLE_CONFIGS: dict[str, dict] = {
-    "adiabatic": {
-        "key_fields": ["mach", "beta", "temp_edge"],
-        "value_fields": ["fpp_wall", "g_wall"],
-        "default_values": [0.55, 3.0],
-        "fname": "lookup_fs_adiabatic.json",
-    },
-    "isothermal": {
-        "key_fields": ["mach", "beta", "g_wall"],
-        "value_fields": ["fpp_wall", "gp_wall"],
-        "default_values": [0.50, 1.0],
-        "fname": "lookup_fs_isothermal.json",
-    },
-}
-
 
 # --------------------------------------------------
-# build_y0: shooting variables --> ODE initial condition [f, f', f'', g, g']
+# build_y0: shooting variables -> ODE initial condition [f, f', f'', g, g']
 # --------------------------------------------------
 def build_y0(
     wall_bc: str,
@@ -100,9 +78,26 @@ def get_initial_guess(
         Predicted shooting variable values.
     """
 
-    # initialize LookupTable (defined in lookup_table.py) for this wall BC type
-    # ** expands the config dict keys into keyword arguments for the LookupTable constructor
-    lookup = LookupTable(**_TABLE_CONFIGS[wall_bc])
+    # adiabatic: key = (mach, beta, temp_edge),  values = (fpp_wall, g_wall)
+    if wall_bc == "adiabatic":
+        lookup = LookupTable(
+            key_fields=["mach", "beta", "temp_edge"],
+            value_fields=["fpp_wall", "g_wall"],
+            default_values=[0.55, 3.0],
+            fname="lookup_fs_adiabatic.json",
+        )
+
+    # isothermal: key = (mach, beta, g_wall),  values = (fpp_wall, gp_wall)
+    elif wall_bc == "isothermal":
+        lookup = LookupTable(
+            key_fields=["mach", "beta", "g_wall"],
+            value_fields=["fpp_wall", "gp_wall"],
+            default_values=[0.50, 1.0],
+            fname="lookup_fs_isothermal.json",
+        )
+
+    else:
+        raise ValueError(f"Unknown wall_bc: {wall_bc!r}. Expected 'adiabatic' or 'isothermal'.")
 
     # predict shooting variables for this query point
     return lookup.predict(key_values)

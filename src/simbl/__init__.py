@@ -24,7 +24,7 @@ from simbl.solver import (
 )
 from simbl.solver.bcs import WallBCType
 from simbl.solver.inputs import SimilarityInputs
-from simbl.solver.options import SolverOptions
+from simbl.solver.options import SolverOptions, default_options
 from simbl.transform import eta2y
 
 # --------------------------------------------------
@@ -53,6 +53,7 @@ __all__ = [
     "SimilarityInputs",
     "SolverConfig",
     "SolverOptions",
+    "default_options",
     "WallBCType",
     "__version__",
     "config_init",

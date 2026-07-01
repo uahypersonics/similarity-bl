@@ -113,7 +113,10 @@ def bl_ode(
     mu = mu_val / mu_edge
 
     # Chapman-Rubesin factor: C = rho*mu/(rho_e*mu_e) = mu/tau for perfect gas
-    C = mu / tau
+    # clamp tau from below and C from below to survive Newton-Raphson trial steps
+    # (tau can go near zero or very large during shooting iterations)
+    tau_clamped = max(tau, 1e-10)
+    C = max(mu / tau_clamped, 1e-10)
 
     # mu'/mu = (T_e/mu_local)*(dmu/dT)*tau'  (chain rule, T = T_e*tau)
     # precompute T_e/mu_local * dmu/dT (reused in all three equations)
@@ -131,7 +134,7 @@ def bl_ode(
     dy[0] = f_p
     dy[1] = f_pp
     dy[2] = (
-        tau_p / tau * f_pp
+        tau_p / tau_clamped * f_pp
         - visc_term * tau_p * f_pp
         - (f * f_pp + problem.beta * (tau - f_p**2)) / C
     )
@@ -144,7 +147,7 @@ def bl_ode(
     # --------------------------------------------------
     dy[5] = g_p
     dy[6] = (
-        tau_p / tau * g_p
+        tau_p / tau_clamped * g_p
         - visc_term * tau_p * g_p
         - f * g_p / C
     )
@@ -164,16 +167,16 @@ def bl_ode(
 
     dy[3] = tau_p
     dy[4] = (
-        tau_p**2 / tau
+        tau_p**2 / tau_clamped
         - visc_term * tau_p**2
         - problem.prandtl * f * tau_p / C
         - 2.0 * problem.prandtl * (S - 1.0) * (
-            (visc_term - 1.0 / tau) * tau_p * f_p * f_pp
+            (visc_term - 1.0 / tau_clamped) * tau_p * f_p * f_pp
             + f_pp**2
             + f_p * f_ppp
         )
         - 2.0 * problem.prandtl * (K - 1.0) * S * (
-            (visc_term - 1.0 / tau) * tau_p * g * g_p
+            (visc_term - 1.0 / tau_clamped) * tau_p * g * g_p
             + g_p**2
             + g * g_pp
         )

@@ -154,7 +154,7 @@ nav:
         - Blasius limit: vnv/verification/falkner_skan/blasius.md
         - Crocco relation: vnv/verification/falkner_skan/crocco.md
         - Hiemenz stagnation point: vnv/verification/falkner_skan/hiemenz/index.md
-        - Hartree table: vnv/verification/falkner_skan/hartree/index.md
+        - Hartree (1937) wall shear: vnv/verification/falkner_skan/hartree/index.md
         - Separation point: vnv/verification/falkner_skan/separation/index.md
       - Falkner-Skan-Cooke:
         - vnv/verification/falkner_skan_cooke/index.md

@@ -10,8 +10,12 @@ from __future__ import annotations
 
 import warnings
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 from simbl.solver.equations import EQUATIONS_ALIASES, VALID_EQUATIONS
+
+if TYPE_CHECKING:
+    from simbl.solver.inputs import SimilarityInputs
 
 
 # --------------------------------------------------
@@ -84,6 +88,11 @@ class SolverOptions:
     # if this limit is exceeded.  default 20 s is well within the 30 s process
     # timeout used by the lookup table generator.
     max_solve_time: float = 20.0
+    # post-convergence physical plausibility threshold for f''(eta_max).
+    # a genuine asymptotic solution has f'' -> 0 at the far field; a large
+    # value indicates Newton converged to a spurious oscillatory branch.
+    # set to None to disable the check.
+    fpp_edge_threshold: float = 0.01
 
     # --------------------------------------------------
     # post-init validation (runs automatically after dataclass __init__)
@@ -131,3 +140,55 @@ class SolverOptions:
                 f"max_iterations = {self.max_iterations} is very low, solver may not converge",
                 stacklevel=2,
             )
+
+
+# --------------------------------------------------
+# default_options: physics-informed SolverOptions
+#
+# derive numerical settings from the physical problem description
+# so that an inexperienced user does not have to tune them manually
+# --------------------------------------------------
+def default_options(inputs: SimilarityInputs) -> SolverOptions:
+    """Return SolverOptions with physics-informed defaults for the given inputs.
+
+    Derives numerical settings (eta_max, equations) directly from the physical
+    problem description so that an inexperienced user does not need to tune them
+    manually.  All other options take the standard dataclass defaults.
+
+    Parameters
+    ----------
+    inputs : SimilarityInputs
+        Physical problem description (Mach, beta, wall BC, equations, etc.).
+
+    Returns
+    -------
+    SolverOptions
+        Solver options calibrated for the given inputs.
+
+    Examples
+    --------
+    >>> from simbl import SimilarityInputs, default_options, solve_similarity
+    >>> inputs = SimilarityInputs(mach_edge=0.5, temp_edge=300.0, beta=0.8)
+    >>> options = default_options(inputs)
+    >>> solution, result = solve_similarity(inputs, options)
+    """
+
+    # --------------------------------------------------
+    # heuristic to set eta_max from beta
+    # --------------------------------------------------
+
+    # For favorable pressure gradient (beta > 0) the boundary layer is thinner
+    # and the solution reaches freestream conditions at smaller eta.
+    eta_max = max(6.0, 15.0 - 5.0 * inputs.beta)
+
+    # --------------------------------------------------
+    # set equations to match the physical problem
+    # --------------------------------------------------
+
+    # non-zero sweep angle means Falkner-Skan-Cooke (3-D); otherwise plain FS
+    equations = "falkner_skan_cooke" if inputs.sweep_angle != 0.0 else "falkner_skan"
+
+    # --------------------------------------------------
+    # build and return options
+    # --------------------------------------------------
+    return SolverOptions(equations=equations, eta_max=eta_max)
