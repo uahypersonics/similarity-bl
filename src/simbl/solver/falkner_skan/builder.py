@@ -112,6 +112,45 @@ def build_solver_problem(
         ])
 
     # --------------------------------------------------
+    # boundary condition function for solve_bvp (collocation fallback)
+    #
+    # encodes both wall and edge BCs as a single residual vector:
+    #   ya = state at eta=0 (wall),  yb = state at eta=eta_max (edge)
+    # state vector: [f, f', f'', tau, tau']   (indices 0-4)
+    #
+    # isothermal wall: tau(0) = g_wall (known), tau'(0) = shooting variable
+    # adiabatic wall:  tau'(0) = 0 (known),     tau(0)  = shooting variable
+    # --------------------------------------------------
+    if problem.wall_bc == "isothermal":
+        g_wall_val = problem.g_wall
+
+        def bc_func(ya: NDArray[np.float64], yb: NDArray[np.float64]) -> NDArray[np.float64]:
+            return np.array([
+                ya[0],               # f(0) = 0
+                ya[1],               # f'(0) = 0
+                ya[3] - g_wall_val,  # tau(0) = Tw/Te
+                yb[1] - 1.0,         # f'(inf) = 1
+                yb[3] - 1.0,         # tau(inf) = 1
+            ])
+
+        # shooting unknowns are f''(0) and tau'(0) — indices 2 and 4
+        sv_indices = [2, 4]
+
+    else:
+        # adiabatic: tau'(0) = 0 is the fixed wall BC; tau(0) is unknown
+        def bc_func(ya: NDArray[np.float64], yb: NDArray[np.float64]) -> NDArray[np.float64]:
+            return np.array([
+                ya[0],        # f(0) = 0
+                ya[1],        # f'(0) = 0
+                ya[4],        # tau'(0) = 0  (zero heat flux)
+                yb[1] - 1.0,  # f'(inf) = 1
+                yb[3] - 1.0,  # tau(inf) = 1
+            ])
+
+        # shooting unknowns are f''(0) and tau(0) — indices 2 and 3
+        sv_indices = [2, 3]
+
+    # --------------------------------------------------
     # pack into SolverProblem dataclass (convenience wrapper) for the generic shooting method (defined in shooting.py)
     # --------------------------------------------------
     return SolverProblem(
@@ -120,4 +159,6 @@ def build_solver_problem(
         residual_function=residual,
         n_shooting=2,
         initial_guess=guess,
+        bc_function=bc_func,
+        shooting_var_indices=sv_indices,
     )

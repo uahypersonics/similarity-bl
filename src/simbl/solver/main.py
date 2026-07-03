@@ -1,7 +1,7 @@
 """Main solver entry point
 
 Dispatches to the appropriate model solver (Falkner-Skan or Falkner-Skan-Cooke),
-runs the shooting method, saves converged solutions to the lookup table,
+runs the shooting or the bvp method, saves converged solutions to the lookup table,
 and returns the solution.
 """
 
@@ -12,8 +12,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import numpy as np
 from flow_state.transport import get_transport_model
 
+from simbl.solver.bvp import bvp_method
 from simbl.solver.falkner_skan.solution import FalknerSkanSolution
 from simbl.solver.falkner_skan_cooke.solution import FalknerSkanCookeSolution
 from simbl.solver.options import SolverOptions
@@ -29,13 +31,13 @@ if TYPE_CHECKING:
 # solve_similarity
 # --------------------------------------------------
 def solve_similarity(
-    problem: SimilarityInputs | None = None,
+    problem: SimilarityInputs,
     options: SolverOptions | None = None,
     *,
     initial_fpp: float | None = None,
     initial_gvar: float | None = None,
     initial_wp: float | None = None,
-    **kwargs,
+    initial_profile: ShootingResult | None = None,
 ) -> tuple[FalknerSkanSolution | FalknerSkanCookeSolution, ShootingResult]:
     """Solve the compressible similarity boundary layer equations
 
@@ -48,9 +50,8 @@ def solve_similarity(
 
     Parameters
     ----------
-    problem : SimilarityInputs, optional
+    problem : SimilarityInputs
         Physics specification (Mach, temperature, wall BC, etc.).
-        If not provided, ``**kwargs`` are used to construct one.
     options : SolverOptions, optional
         Numerical settings. If None, uses defaults. Also carries the `equations` field.
     initial_fpp : float, optional
@@ -59,9 +60,13 @@ def solve_similarity(
         Override initial guess for g variable -- g(0) for adiabatic, g'(0) for isothermal.
     initial_wp : float, optional
         Override initial guess for w'(0) (FSC only).
-    **kwargs
-        Forwarded to :class:`~simbl.solver.inputs.SimilarityInputs` when ``problem``
-        is not provided. ``mach`` is accepted as an alias for ``mach_edge``.
+    initial_profile : ShootingResult, optional
+        Full solution profile from a nearby converged solve (e.g. the previous
+        Mach point).  When ``solver_method="shooting_then_bvp"`` and shooting
+        fails, this profile is passed to the BVP fallback as the initial mesh
+        guess instead of the failed shooting result.  A physically correct profile
+        from an adjacent parameter point gives the collocation solver a far better
+        starting state than the diverged shooting trajectory.
 
     Returns
     -------
@@ -72,8 +77,8 @@ def solve_similarity(
     --------
     Quickest form — pass fields directly:
 
-    >>> from simbl import solve_similarity
-    >>> solution, info = solve_similarity(mach=6.0, temp_edge=55.0)
+    >>> from simbl import solve_similarity, SimilarityInputs
+    >>> solution, info = solve_similarity(SimilarityInputs(mach_edge=6.0, temp_edge=55.0))
 
     Explicit ``SimilarityInputs`` object:
 
@@ -86,16 +91,6 @@ def solve_similarity(
     >>> problem = SimilarityInputs(mach_edge=2.0, temp_edge=220.0, sweep_angle=30.0)
     >>> solution, info = solve_similarity(problem, SolverOptions(equations="falkner_skan_cooke"))
     """
-    from simbl.solver.inputs import SimilarityInputs as _SimilarityInputs
-
-    # convenience: build a SimilarityInputs from kwargs if problem not given
-    if problem is None:
-        if not kwargs:
-            raise TypeError("solve_similarity() requires either a 'problem' argument or keyword arguments")
-        if "mach" in kwargs:
-            kwargs["mach_edge"] = kwargs.pop("mach")
-        problem = _SimilarityInputs(**kwargs)
-
     # set default options if not provided
     if options is None:
         options = SolverOptions()
@@ -165,16 +160,38 @@ def solve_similarity(
         )
 
     # --------------------------------------------------
-    # solve using shooting method in shooting.py
-    # result is a ShootingResult dataclass containing:
-    # - converged: bool
-    # - iterations: int
-    # - eta: array of similarity coordinate values
-    # - solution: array of solution variables at each eta point
-    # - shooting_vars: array of converged shooting variable values at the wall
-    # - residual: array of final residual values at the edge
+    # dispatch to solver
+    #
+    # "bvp"              : scipy.integrate.solve_bvp only (robust, slower)
+    # "shooting"         : Newton shooting only (default, fast)
     # --------------------------------------------------
-    result = shooting_method(solver_problem, options)
+
+    if options.solver_method == "bvp":
+        # BVP solver
+
+        # run shooting first to obtain a physically shaped initial profile
+        shooting_result = shooting_method(solver_problem, options)
+
+        # if the shooting converged, use its solution as the initial profile for the BVP solver
+        shooting_profile = shooting_result if not np.any(np.isnan(shooting_result.solution)) else None
+
+        # run bvp solver
+        result = bvp_method(solver_problem, options, initial_profile=shooting_profile, problem=problem)
+
+    else:
+
+        # shooting solver (default)
+        result = shooting_method(solver_problem, options)
+
+        # BVP fallback: if shooting failed and the flag is set, retry with bvp method
+        if not result.converged and options.bvp_fallback:
+            if initial_profile is not None:
+                bvp_initial = initial_profile
+            elif not np.any(np.isnan(result.solution)):
+                bvp_initial = result
+            else:
+                bvp_initial = None
+            result = bvp_method(solver_problem, options, initial_profile=bvp_initial, problem=problem)
 
     # --------------------------------------------------
     # build model-specific solution dataclass

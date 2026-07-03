@@ -70,13 +70,16 @@ class SimilarityInputs:
     # define parameters with type annotations and default values
     # --------------------------------------------------
 
-    # edge (freestream) conditions
+    # edge conditions
     mach_edge: float
     temp_edge: float
 
     # wall boundary condition
-    wall_bc: str = "adiabatic"  # "isothermal" or "adiabatic"
-    temp_wall: float | None = None  # wall temperature [K] (isothermal only)
+
+    # "isothermal" or "adiabatic"
+    wall_bc: str = "adiabatic"
+    # wall temperature [K] for isothermal walls; None for adiabatic walls
+    temp_wall: float | None = None
 
     # gas properties
     prandtl: float = 0.72

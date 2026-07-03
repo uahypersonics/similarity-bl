@@ -143,6 +143,46 @@ def build_solver_problem(
         ])
 
     # --------------------------------------------------
+    # boundary condition function for solve_bvp (collocation fallback)
+    #
+    # state vector: [f, f', f'', tau, tau', g, g']  (indices 0-6)
+    # wall: f=0, f'=0, g=0 always; tau or tau' fixed depending on wall_bc
+    # edge: f'=1, tau=1, g=gcf_edge_target
+    # --------------------------------------------------
+    if problem.wall_bc == "isothermal":
+        tau_wall_val = problem.g_wall
+
+        def bc_func(ya: NDArray[np.float64], yb: NDArray[np.float64]) -> NDArray[np.float64]:
+            return np.array([
+                ya[0],                        # f(0) = 0
+                ya[1],                        # f'(0) = 0
+                ya[3] - tau_wall_val,          # tau(0) = Tw/Te
+                ya[5],                         # g(0) = 0
+                yb[1] - 1.0,                   # f'(inf) = 1
+                yb[3] - 1.0,                   # tau(inf) = 1
+                yb[5] - gcf_edge_target,       # g(inf) = gcf_edge_target
+            ])
+
+        # shooting unknowns: f''(0), g'(0), tau'(0) — indices 2, 4, 6
+        sv_indices = [2, 4, 6]
+
+    else:
+        # adiabatic: tau'(0) = 0; tau(0) is the shooting unknown
+        def bc_func(ya: NDArray[np.float64], yb: NDArray[np.float64]) -> NDArray[np.float64]:
+            return np.array([
+                ya[0],                    # f(0) = 0
+                ya[1],                    # f'(0) = 0
+                ya[4],                    # tau'(0) = 0  (zero heat flux)
+                ya[5],                    # g(0) = 0
+                yb[1] - 1.0,              # f'(inf) = 1
+                yb[3] - 1.0,              # tau(inf) = 1
+                yb[5] - gcf_edge_target,  # g(inf) = gcf_edge_target
+            ])
+
+        # shooting unknowns: f''(0), g'(0), tau(0) — indices 2, 3, 6
+        sv_indices = [2, 3, 6]
+
+    # --------------------------------------------------
     # pack into SolverProblem dataclass (convenience wrapper) for the generic shooting method (defined in shooting.py)
     # --------------------------------------------------
     return SolverProblem(
@@ -151,4 +191,6 @@ def build_solver_problem(
         residual_function=residual,
         n_shooting=3,
         initial_guess=guess,
+        bc_function=bc_func,
+        shooting_var_indices=sv_indices,
     )

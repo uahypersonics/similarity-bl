@@ -52,6 +52,13 @@ class SolverProblem:
     residual_function: Callable[[NDArray[np.float64]], NDArray[np.float64]]
     n_shooting: int
     initial_guess: NDArray[np.float64]
+    # boundary condition function for solve_bvp: bc(ya, yb) -> residual vector
+    # encodes wall BCs in ya and edge BCs in yb; set by the model builder
+    bc_function: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.float64]] | None = None
+    # indices into the state vector y that correspond to the shooting variables
+    # (the unknowns the shooting method optimises at the wall)
+    # used by bvp_method to extract equivalent wall values from the BVP solution
+    shooting_var_indices: list[int] | None = None
 
 
 # --------------------------------------------------
@@ -75,6 +82,10 @@ class ShootingResult:
     """Converged shooting variable values at the wall (e.g., f''(0), g(0) or g'(0))"""
     residual: NDArray[np.float64]
     """Final residual vector at the edge (should be close to zero if converged)"""
+    history: list[dict] | None = None
+    """Per-iteration convergence history when options.store_history=True.
+    Each entry: {"iteration": int, "shooting_vars": NDArray, "residual_norm": float}.
+    None when store_history=False (default)."""
 
     # special method (dunder): controls how the object is printed / repr'd
     def __repr__(self) -> str:
@@ -195,7 +206,7 @@ def shooting_method(
                     t_eval=points,
                     rtol=options.tolerance,
                     atol=options.tolerance,
-                    max_step=options.eta_max / 50,
+                    max_step=options.eta_max / options.bdf_max_step_divisor,
                 )
             except (ValueError, OverflowError, _SolveTimeout):
                 return _FailedSol()
@@ -222,6 +233,8 @@ def shooting_method(
     iteration = 0
     # initialize residual vector
     F = np.zeros(solver_problem.n_shooting)
+    # convergence history: populated only when options.store_history=True
+    history: list[dict] | None = [] if options.store_history else None
 
     for iteration in range(1, options.max_iterations + 1):  # noqa: B007
 
@@ -246,6 +259,14 @@ def shooting_method(
 
         # compute residual vector F(s) = y(eta_max) - target boundary conditions (set in builder.py of the respective model)
         F = solver_problem.residual_function(y_edge)
+
+        # record convergence history if requested
+        if history is not None:
+            history.append({
+                "iteration": iteration,
+                "shooting_vars": s.copy(),
+                "residual_norm": float(np.linalg.norm(F)),
+            })
 
         # check convergence (tolerance defaults to 1e-8 if it is not user defined, see options.py)
         if np.all(np.abs(F) < options.tolerance):
@@ -350,6 +371,17 @@ def shooting_method(
         )
         converged = False
 
+    if converged and abs(sol.y[4, -1]) >= options.taup_edge_threshold:
+        taup_edge_val = float(sol.y[4, -1])
+        warnings.warn(
+            f"Possible spurious solution: tau'(eta_max) = {taup_edge_val:.4f} "
+            f"exceeds threshold {options.taup_edge_threshold}. "
+            "Temperature profile has not relaxed to the edge condition; "
+            "Newton may have converged to a non-physical branch or eta_max is too small.",
+            stacklevel=3,
+        )
+        converged = False
+
     # -------------------------------------------------
     # package results into ShootingResult dataclass for convenient access by caller
     # -------------------------------------------------
@@ -361,4 +393,5 @@ def shooting_method(
         solution=sol.y,
         shooting_vars=s.copy(),
         residual=F,
+        history=history,
     )

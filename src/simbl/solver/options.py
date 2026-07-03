@@ -88,11 +88,38 @@ class SolverOptions:
     # if this limit is exceeded.  default 20 s is well within the 30 s process
     # timeout used by the lookup table generator.
     max_solve_time: float = 20.0
+    # primary solver to use:
+    #   "shooting" -- Newton shooting method (default, fast)
+    #   "bvp"      -- scipy.integrate.solve_bvp collocation (robust, slower)
+    solver_method: str = "shooting"
+    # when solver_method="shooting" and bvp_fallback=True, retry with the BVP
+    # collocation solver if shooting fails to converge.  the BVP receives the
+    # last converged profile from the caller (initial_profile) as its starting
+    # mesh — a physically correct profile from an adjacent parameter point.
+    bvp_fallback: bool = False
     # post-convergence physical plausibility threshold for f''(eta_max).
     # a genuine asymptotic solution has f'' -> 0 at the far field; a large
     # value indicates Newton converged to a spurious oscillatory branch.
     # set to None to disable the check.
     fpp_edge_threshold: float = 0.01
+    # post-convergence physical plausibility threshold for tau'(eta_max).
+    # a genuine asymptotic solution has tau' -> 0 at the far field; a large
+    # value indicates the temperature profile has not relaxed to the edge
+    # condition (spurious branch or eta_max too small).
+    # calibrated for eta_max >= 5: at eta_max=5 physical solutions reach
+    # |tau'(eta_max)| ~ 0.13-0.29 for cold walls / high Mach, so the
+    # original threshold of 0.05 was incorrectly rejecting physical solutions.
+    taup_edge_threshold: float = 0.5
+    # divisor for the BDF fallback max_step inside shooting_method.
+    # max_step = eta_max / bdf_max_step_divisor.
+    # larger values → smaller steps → more stable for stiff near-wall gradients.
+    # default 50 preserves the original behaviour (max_step = eta_max/50 = 0.12 at eta_max=6).
+    bdf_max_step_divisor: float = 50.0
+    # when True, record the shooting variable values and residual norm at every
+    # Newton iteration.  stored in ShootingResult.history as a list of dicts
+    # with keys "iteration", "shooting_vars", "residual_norm".
+    # off by default to avoid overhead in large parameter sweeps.
+    store_history: bool = False
 
     # --------------------------------------------------
     # post-init validation (runs automatically after dataclass __init__)
@@ -125,6 +152,12 @@ class SolverOptions:
         if self.equations not in VALID_EQUATIONS:
             raise ValueError(
                 f"equations must be one of {set(VALID_EQUATIONS)}: got {self.equations!r}"
+            )
+        # validate solver_method
+        valid_methods = {"shooting", "bvp"}
+        if self.solver_method not in valid_methods:
+            raise ValueError(
+                f"solver_method must be one of {valid_methods}: got {self.solver_method!r}"
             )
 
         # --------------------------------------------------
