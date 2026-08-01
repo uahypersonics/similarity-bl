@@ -24,6 +24,8 @@ from simbl.solver.shooting import ShootingResult, shooting_method
 # imports only used in type annotations, not at runtime (improved performance)
 # avoids circular imports between solver modules
 if TYPE_CHECKING:
+    from flow_state.transport import TransportModel
+
     from simbl.solver.inputs import SimilarityInputs
 
 
@@ -34,6 +36,7 @@ def solve_similarity(
     problem: SimilarityInputs,
     options: SolverOptions | None = None,
     *,
+    visc_model: TransportModel | None = None,
     initial_fpp: float | None = None,
     initial_gvar: float | None = None,
     initial_wp: float | None = None,
@@ -54,6 +57,9 @@ def solve_similarity(
         Physics specification (Mach, temperature, wall BC, etc.).
     options : SolverOptions, optional
         Numerical settings. If None, uses defaults. Also carries the `equations` field.
+    visc_model : TransportModel, optional
+        Existing flow-state viscosity model. If omitted, construct the model
+        from ``problem.viscosity_model`` and ``problem.viscosity_model_kwargs``.
     initial_fpp : float, optional
         Override initial guess for f''(0).
     initial_gvar : float, optional
@@ -107,9 +113,12 @@ def solve_similarity(
     # (tan^2(Lambda) = 0 in the energy equation, w solves an independent
     # linear BVP), and the streamwise/energy quantities recover Falkner-Skan.
 
-    # create viscosity model (shared across all models)
-    # viscosity_model_kwargs allows overriding built-in air() preset constants
-    visc_model = get_transport_model(problem.viscosity_model, **(problem.viscosity_model_kwargs or {}))
+    # create viscosity model from configuration when no existing model is supplied
+    if visc_model is None:
+        visc_model = get_transport_model(
+            problem.viscosity_model,
+            **(problem.viscosity_model_kwargs or {}),
+        )
 
     # --------------------------------------------------
     # dispatch to model-specific builder
