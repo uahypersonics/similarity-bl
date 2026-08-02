@@ -30,7 +30,7 @@ dependencies = [
     "scipy>=1.10.0",
     "pydantic>=2.0.0",
     "tomli-w>=1.0.0",
-    "flow-state-calculator>=0.2.0",
+    "flowstate>=0.6.0",
 ]
 
 [project.optional-dependencies]
