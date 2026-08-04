@@ -98,27 +98,22 @@ nav:
   - Home: index.md
   - Installation: installation.md
   - User Guide:
-    - user_guide/index.md
+    - Overview: user_guide/index.md
+    - Workflow:
+      - Overview: workflow/index.md
+      - Define Solver Inputs: workflow/define_solver_inputs.md
+      - Define Solver Options: workflow/define_solver_options.md
+      - Run Solver: workflow/run_solver.md
+      - Optionally Map To Physical Space: workflow/map_to_physical_space.md
+      - Use Or Export Profiles: workflow/use_or_export_profiles.md
+    - Configuration:
+      - Overview: configuration/index.md
+      - Inputs: configuration/inputs.md
+      - Solver Options: configuration/solver_options.md
+      - Output Formats: configuration/output_formats.md
     - CLI Usage: user_guide/cli_usage.md
     - API Usage: user_guide/api_usage.md
     - MATLAB Usage: user_guide/matlab_usage.md
-  - Workflow:
-    - workflow/index.md
-    - Define Solver Inputs: workflow/define_solver_inputs.md
-    - Define Solver Options: workflow/define_solver_options.md
-    - Run Solver: workflow/run_solver.md
-    - Optionally Map To Physical Space: workflow/map_to_physical_space.md
-    - Use Or Export Profiles: workflow/use_or_export_profiles.md
-  - Configuration:
-    - configuration/index.md
-    - Inputs: configuration/inputs.md
-    - Solver Options: configuration/solver_options.md
-    - Output Formats: configuration/output_formats.md        
-  - CLI Reference:
-    - cli_reference/index.md
-  - API Reference:
-    - api_reference/index.md
-    - Architecture: api_reference/architecture.md
   - Theory:
     - theory/index.md
     - Boundary Layer Equations:
@@ -145,6 +140,11 @@ nav:
       - Reduction of Order: theory/falkner_skan_cooke/reduction_of_order.md
     - Virtual Origin Concept:
       - theory/virtual_origin_concept/index.md
+  - CLI Reference:
+    - cli_reference/index.md
+  - API Reference:
+    - api_reference/index.md
+    - Architecture: api_reference/architecture.md
   - Validation and Verification:
     - vnv/index.md
     - Verification:
