@@ -6,7 +6,7 @@ Compressible similarity boundary layer solver with Falkner-Skan and Falkner-Skan
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20648457.svg)](https://doi.org/10.5281/zenodo.20648457)
 [![PyPI](https://img.shields.io/pypi/v/similarity-bl)](https://pypi.org/project/similarity-bl/)
 [![Docs](https://img.shields.io/badge/docs-zensical-blue)](https://uahypersonics.github.io/similarity-bl/)
-[![License](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/license-GPL--3.0--or--later-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-≥3.11-blue.svg)](https://www.python.org/downloads/)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
