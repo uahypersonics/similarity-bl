@@ -35,6 +35,7 @@ print(f"g(0)   = {solution.g[0]:.6f}")
 
 ```bash
 simbl init                   # generate a template config file
+simbl init --flow edge_conditions.json  # initialize from a canonical FlowState
 simbl solve config.toml      # solve from config
 simbl solve --mach 6.0 --temp-edge 55.0 --wall adiabatic
 ```

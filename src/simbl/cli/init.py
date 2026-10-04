@@ -30,6 +30,7 @@ DEFAULT_CONFIG = "simbl_config.toml"
 # the user can specify:
 # - a different output path with --output
 # - a different template type with --equations (fs or fsc)
+# - edge and gas properties imported from a canonical FlowState with --flow-state
 # - force overwrite an existing file with --force
 # --------------------------------------------------
 def cmd_init(
@@ -44,6 +45,14 @@ def cmd_init(
             help="Template type: fs (Falkner-Skan) or fsc (Falkner-Skan-Cooke).",
         ),
     ] = "fs",
+    flow_state: Annotated[
+        Path | None,
+        typer.Option(
+            "--flow-state",
+            "--flow",
+            help="Initialize edge and gas properties from a canonical FlowState JSON file.",
+        ),
+    ] = None,
     force: Annotated[
         bool,
         typer.Option("--force", "-f", help="Overwrite existing file."),
@@ -56,7 +65,12 @@ def cmd_init(
 
     # write template config and report validation errors
     try:
-        config_init(output, equations=equations, force=force)
+        warnings = config_init(
+            output,
+            equations=equations,
+            force=force,
+            flow_state=flow_state,
+        )
     except FileExistsError as error:
         typer.echo(str(error), err=True)
         typer.echo("Use --force to overwrite.", err=True)
@@ -67,4 +81,6 @@ def cmd_init(
 
     # report created file and next command
     typer.echo(f"Created: {output}")
+    for warning in warnings:
+        typer.echo(f"Warning: {warning}", err=True)
     typer.echo(f"Edit the file, then run: simbl solve {output}")

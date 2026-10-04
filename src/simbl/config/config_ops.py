@@ -99,7 +99,13 @@ def config_save(config: SolverConfig, fname: str | Path) -> None:
 # --------------------------------------------------
 # config_init: write blank template config file
 # --------------------------------------------------
-def config_init(fname: str | Path, *, equations: str = "fs", force: bool = False) -> None:
+def config_init(
+    fname: str | Path,
+    *,
+    equations: str = "fs",
+    force: bool = False,
+    flow_state: str | Path | None = None,
+) -> list[str]:
     """Write a template configuration file to disk
 
     Parameters
@@ -110,6 +116,13 @@ def config_init(fname: str | Path, *, equations: str = "fs", force: bool = False
         Template type: 'fs' (Falkner-Skan, default) or 'fsc' (Falkner-Skan-Cooke).
     force : bool
         If False (default), raises FileExistsError if file already exists.
+    flow_state : str or Path, optional
+        Canonical FlowState JSON used to initialize edge and gas properties.
+
+    Returns
+    -------
+    list[str]
+        Warnings for optional FlowState properties that could not be imported.
 
     Raises
     ------
@@ -126,11 +139,122 @@ def config_init(fname: str | Path, *, equations: str = "fs", force: bool = False
     # fs  = 2D Falkner-Skan (flat plate / wedge)
     # fsc = 3D Falkner-Skan-Cooke (swept wing)
     from simbl.config.template import CONFIG_TEMPLATE_FS, CONFIG_TEMPLATE_FSC
+
     templates = {"fs": CONFIG_TEMPLATE_FS, "fsc": CONFIG_TEMPLATE_FSC}
     if equations not in templates:
         raise ValueError(f"Unknown equations '{equations}'. Choose 'fs' or 'fsc'.")
 
-    fname.write_text(templates[equations])
+    # initialize the selected template from an optional canonical FlowState
+    template = templates[equations]
+    warnings: list[str] = []
+    if flow_state is not None:
+        template, warnings = _initialize_template_from_flow_state(
+            template,
+            flow_state,
+        )
+
+    # write and validate the generated configuration
+    fname.write_text(template, encoding="utf-8")
+    config_load(fname)
+
+    return warnings
+
+
+# --------------------------------------------------
+# FlowState template initialization
+# --------------------------------------------------
+def _initialize_template_from_flow_state(
+    template: str,
+    flow_state_path: str | Path,
+) -> tuple[str, list[str]]:
+    """Populate a SIMBL template from a canonical FlowState JSON file.
+
+    Parameters
+    ----------
+    template : str
+        SIMBL TOML template text.
+    flow_state_path : str or Path
+        Canonical FlowState JSON path.
+
+    Returns
+    -------
+    tuple[str, list[str]]
+        Updated template text and consistency warnings.
+
+    Raises
+    ------
+    ValueError
+        If the FlowState does not contain required edge properties.
+    """
+    from flow_state.io import read_json
+
+    # read the canonical edge state through flow-state
+    flow_state_path = Path(flow_state_path)
+    state = read_json(flow_state_path)
+
+    # validate properties required by the similarity equations
+    if state.mach is None:
+        raise ValueError("FlowState must contain mach for mach_edge")
+
+    # import the required edge and gas properties
+    template = _replace_template_value(template, "mach_edge = 6.0", state.mach)
+    template = _replace_template_value(template, "temp_edge = 300.0", state.temp)
+    template = _replace_template_value(template, "gamma = 1.4", state.gamma)
+
+    # import optional Prandtl data or retain the documented SIMBL default
+    warnings: list[str] = []
+    if state.pr is None:
+        warnings.append(
+            "FlowState does not contain a Prandtl number; retaining SIMBL default prandtl = 0.72"
+        )
+    else:
+        template = _replace_template_value(template, "prandtl = 0.72", state.pr)
+
+    # import the transport model when available
+    if state.transport_model is None:
+        warnings.append(
+            "FlowState does not contain a transport model; retaining SIMBL default model = 'sutherland'"
+        )
+    else:
+        transport_spec = state.transport_model
+        model_line = f'model = "{transport_spec.model_type}"'
+        model_parameters = transport_spec.parameters
+        supported_parameters = {"mu_ref", "T_ref", "S"}
+        unsupported_parameters = sorted(set(model_parameters) - supported_parameters)
+
+        # only transfer a complete parameter set that SIMBL can represent
+        if unsupported_parameters:
+            unsupported = ", ".join(unsupported_parameters)
+            warnings.append(
+                f"SIMBL cannot import parameters for transport model "
+                f"'{transport_spec.model_type}': {unsupported}; using its registered default"
+            )
+        else:
+            parameter_lines = [f"{name} = {value}" for name, value in model_parameters.items()]
+            if parameter_lines:
+                model_line = "\n".join([model_line, *parameter_lines])
+
+        template = template.replace('model = "sutherland"', model_line, 1)
+
+    # record source provenance without creating a live file dependency
+    source_comment = f"# initialized from FlowState: {flow_state_path}"
+    template_lines = template.splitlines()
+    template_lines.insert(1, source_comment)
+    template = "\n".join(template_lines) + "\n"
+
+    return template, warnings
+
+
+def _replace_template_value(template: str, field: str, value: float) -> str:
+    """Replace one controlled scalar assignment in a config template."""
+    if template.count(field) != 1:
+        raise ValueError(f"SIMBL config template does not contain exactly one {field!r}")
+
+    key = field.split("=", 1)[0].strip()
+    replacement = f"{key} = {value}"
+    updated_template = template.replace(field, replacement, 1)
+
+    return updated_template
 
 
 # --------------------------------------------------
