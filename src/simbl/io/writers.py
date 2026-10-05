@@ -20,6 +20,7 @@ if TYPE_CHECKING:
     from simbl.solver.falkner_skan_cooke.solution import FalknerSkanCookeSolution
     from simbl.solver.inputs import SimilarityInputs
     from simbl.solver.main import ShootingResult
+    from simbl.solver.solution import SimilaritySolution
 
 from simbl.io.json_writer import _write_json
 from simbl.io.tecplot_writer import _write_tecplot
@@ -45,7 +46,7 @@ def get_supported_formats() -> list[str]:
 # write: auto-detect format from extension and dispatch to writer
 # --------------------------------------------------
 def write(
-    solution: FalknerSkanSolution | FalknerSkanCookeSolution,
+    solution: FalknerSkanSolution | FalknerSkanCookeSolution | SimilaritySolution,
     fname: str | Path,
     *,
     problem: SimilarityInputs | None = None,

@@ -19,6 +19,7 @@ except ImportError as exc:  # pragma: no cover
 # --------------------------------------------------
 # package imports
 # --------------------------------------------------
+from simbl.cli.baseflow import baseflow_app
 from simbl.cli.eta2y import cmd_eta2y
 from simbl.cli.examples import cmd_examples
 from simbl.cli.init import cmd_init
@@ -115,6 +116,7 @@ cli.command("init")(cmd_init)
 cli.command("solve")(cmd_solve)
 cli.command("eta2y")(cmd_eta2y)
 cli.command("examples")(cmd_examples)
+cli.add_typer(baseflow_app, name="baseflow")
 
 
 # --------------------------------------------------

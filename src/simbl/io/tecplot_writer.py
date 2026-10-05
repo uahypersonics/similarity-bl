@@ -21,13 +21,14 @@ if TYPE_CHECKING:
     from simbl.solver.falkner_skan_cooke.solution import FalknerSkanCookeSolution
     from simbl.solver.inputs import SimilarityInputs
     from simbl.solver.shooting import ShootingResult
+    from simbl.solver.solution import SimilaritySolution
 
 
 # --------------------------------------------------
 # write_tecplot: write similarity profiles to Tecplot ASCII format
 # --------------------------------------------------
 def _write_tecplot(
-    solution: FalknerSkanSolution | FalknerSkanCookeSolution,
+    solution: FalknerSkanSolution | FalknerSkanCookeSolution | SimilaritySolution,
     fname: Path,
     problem: SimilarityInputs | None = None,
     title: str | None = None,
@@ -68,7 +69,7 @@ def _write_tecplot(
     v_ue_sqrtRex = 0.5 * (solution.eta * solution.fp - solution.f)
 
     # Handle both old (g) and new (tau) naming for temperature
-    if hasattr(solution, 'tau'):
+    if hasattr(solution, "tau"):
         rho_rhoe = 1.0 / solution.tau
     else:
         rho_rhoe = 1.0 / solution.g
@@ -79,7 +80,6 @@ def _write_tecplot(
 
     # title
     if title is None:
-
         if problem is not None:
             # set title with mach and beta if problem inputs are available
             title = f"Similarity Solution M={problem.mach_edge:.2f} beta={problem.beta:.3f}"
@@ -89,7 +89,6 @@ def _write_tecplot(
 
     # zone name
     if zone_name is None:
-
         if problem is not None:
             # set zone name with mach and beta if problem inputs are available
             zone_name = f"mach_{problem.mach_edge:.1f}_beta{problem.beta:.2f}_{problem.wall_bc}"
@@ -107,7 +106,6 @@ def _write_tecplot(
     # write file
     # --------------------------------------------------
     with open(fname, "w") as f:
-
         # tecplot header block
         f.write(f'TITLE = "{title}"\n')
         var_str = ", ".join(f'"{v}"' for v in variables)
@@ -129,10 +127,10 @@ def _write_tecplot(
         f.write(f'AUXDATA fpp_wall = "{solution.fpp[0]}"\n')
 
         # Handle both old and new naming
-        if hasattr(solution, 'taup'):
+        if hasattr(solution, "taup"):
             f.write(f'AUXDATA taup_wall = "{solution.taup[0]}"\n')
             f.write(f'AUXDATA tau_wall = "{solution.tau[0]}"\n')
-        elif hasattr(solution, 'gp'):
+        elif hasattr(solution, "gp"):
             f.write(f'AUXDATA gp_wall = "{solution.gp[0]}"\n')
             f.write(f'AUXDATA g_wall = "{solution.g[0]}"\n')
 
@@ -169,13 +167,13 @@ def _write_tecplot(
         # --------------------------------------------------
 
         # Get temperature array (support both old and new naming)
-        temp_ratio = solution.tau if hasattr(solution, 'tau') else solution.g
+        temp_ratio = solution.tau if hasattr(solution, "tau") else solution.g
 
         # Get crossflow array (support both old and new naming)
         crossflow = None
-        if hasattr(solution, 'g_cf'):
+        if hasattr(solution, "g_cf"):
             crossflow = solution.g_cf
-        elif hasattr(solution, 'w'):
+        elif hasattr(solution, "w"):
             crossflow = solution.w
 
         for i in range(len(solution.eta)):
@@ -190,5 +188,3 @@ def _write_tecplot(
                 row += f"{crossflow[i]:18.10E} "
             row = row.rstrip() + "\n"
             f.write(row)
-
-

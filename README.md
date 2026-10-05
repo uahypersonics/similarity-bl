@@ -36,9 +36,15 @@ print(f"g(0)   = {solution.g[0]:.6f}")
 ```bash
 simbl init                   # generate a template config file
 simbl init --flow edge_conditions.json  # initialize from a canonical FlowState
-simbl solve config.toml      # solve from config
+simbl solve config.toml --output simbl.json  # solve from config
 simbl solve --mach 6.0 --temp-edge 55.0 --wall adiabatic
+simbl baseflow init          # generate a physical-grid mapping config
+simbl baseflow run simbl_baseflow.toml
 ```
+
+The baseflow workflow maps a converged JSON similarity solution onto an existing
+structured HDF5 grid. Grid points beyond the similarity domain are filled with
+the exact edge state.
 
 ## Documentation
 

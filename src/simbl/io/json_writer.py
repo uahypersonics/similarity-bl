@@ -24,13 +24,14 @@ if TYPE_CHECKING:
     from simbl.solver.falkner_skan_cooke.solution import FalknerSkanCookeSolution
     from simbl.solver.inputs import SimilarityInputs
     from simbl.solver.shooting import ShootingResult
+    from simbl.solver.solution import SimilaritySolution
 
 
 # --------------------------------------------------
 # write_json: write similarity profiles and metadata to JSON
 # --------------------------------------------------
 def _write_json(
-    solution: FalknerSkanSolution | FalknerSkanCookeSolution,
+    solution: FalknerSkanSolution | FalknerSkanCookeSolution | SimilaritySolution,
     fname: Path,
     problem: SimilarityInputs | None = None,
     shooting_result: ShootingResult | None = None,
@@ -68,10 +69,14 @@ def _write_json(
 
     # wall values from solution
     metadata["fpp_wall"] = solution.fpp[0]
-    metadata["gp_wall"] = solution.gp[0]
-    metadata["g_wall"] = solution.g[0]
-    if hasattr(solution, "wp"):
-        metadata["wp_wall"] = solution.wp[0]
+    metadata["taup_wall"] = solution.taup[0]
+    metadata["tau_wall"] = solution.tau[0]
+
+    # write crossflow metadata only when the optional profile pair is populated
+    crossflow = getattr(solution, "g", None)
+    crossflow_gradient = getattr(solution, "gp", None)
+    if crossflow is not None and crossflow_gradient is not None:
+        metadata["gp_wall"] = crossflow_gradient[0]
 
     # convergence info (if provided)
     if shooting_result is not None:
@@ -91,14 +96,14 @@ def _write_json(
         "f": solution.f.tolist(),
         "fp": solution.fp.tolist(),
         "fpp": solution.fpp.tolist(),
-        "g": solution.g.tolist(),
-        "gp": solution.gp.tolist(),
+        "tau": solution.tau.tolist(),
+        "taup": solution.taup.tolist(),
     }
 
     # crossflow profiles (FSC only)
-    if hasattr(solution, "w"):
-        profiles["w"] = solution.w.tolist()
-        profiles["wp"] = solution.wp.tolist()
+    if crossflow is not None and crossflow_gradient is not None:
+        profiles["g"] = crossflow.tolist()
+        profiles["gp"] = crossflow_gradient.tolist()
 
     # --------------------------------------------------
     # combine metadata and profile dictionaries to output dictionary
