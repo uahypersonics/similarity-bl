@@ -20,6 +20,7 @@ if TYPE_CHECKING:
     from simbl.solver.falkner_skan.solution import FalknerSkanSolution
     from simbl.solver.falkner_skan_cooke.solution import FalknerSkanCookeSolution
     from simbl.solver.inputs import SimilarityInputs
+    from simbl.solver.options import SolverOptions
     from simbl.solver.shooting import ShootingResult
     from simbl.solver.solution import SimilaritySolution
 
@@ -31,6 +32,7 @@ def _write_tecplot(
     solution: FalknerSkanSolution | FalknerSkanCookeSolution | SimilaritySolution,
     fname: Path,
     problem: SimilarityInputs | None = None,
+    solver_options: SolverOptions | None = None,
     title: str | None = None,
     zone_name: str | None = None,
     shooting_result: ShootingResult | None = None,
@@ -45,6 +47,8 @@ def _write_tecplot(
         Output file path.
     problem : SimilarityInputs, optional
         Problem specification for metadata.
+    solver_options : SolverOptions, optional
+        Numerical solver settings for provenance metadata.
     title : str, optional
         Title for the Tecplot file header.
     zone_name : str, optional
@@ -123,6 +127,11 @@ def _write_tecplot(
             if problem.sweep_angle != 0.0:
                 f.write(f'AUXDATA sweep_angle = "{problem.sweep_angle}"\n')
 
+        if solver_options is not None:
+            f.write(f'AUXDATA equations = "{solver_options.equations}"\n')
+            f.write(f'AUXDATA solver_method = "{solver_options.solver_method}"\n')
+            f.write(f'AUXDATA ode_method = "{solver_options.ode_method}"\n')
+
         # auxiliary data: wall values from solution
         f.write(f'AUXDATA fpp_wall = "{solution.fpp[0]}"\n')
 
@@ -143,6 +152,7 @@ def _write_tecplot(
         if shooting_result is not None:
             f.write(f'AUXDATA converged = "{shooting_result.converged}"\n')
             f.write(f'AUXDATA iterations = "{shooting_result.iterations}"\n')
+            f.write(f'AUXDATA solver_method_used = "{shooting_result.method}"\n')
 
         f.write(f'AUXDATA n_points = "{len(solution.eta)}"\n')
         f.write(f'AUXDATA generated = "{datetime.now().isoformat()}"\n')

@@ -85,6 +85,7 @@ def bvp_method(
     elif problem is not None:
         # Crocco-Busemann physics-based profile (profiles.py)
         from simbl.solver.profiles import build_initial_profile
+
         y_init = build_initial_profile(problem, solver_problem, eta_init)
     else:
         # last resort: linear ramp from wall IC toward expected edge values
@@ -167,6 +168,7 @@ def bvp_method(
         solution=y_out,
         shooting_vars=shooting_vars,
         residual=residual,
+        method="bvp",
     )
 
 
@@ -243,11 +245,11 @@ def _build_ramp_profile(
     # FSC (7): [f, f', f'', tau, tau', g, g']
     edge_values = np.zeros(n_state)
     if n_state >= 2:
-        edge_values[1] = 1.0   # f' -> 1
+        edge_values[1] = 1.0  # f' -> 1
     if n_state >= 4:
-        edge_values[3] = 1.0   # tau -> 1
+        edge_values[3] = 1.0  # tau -> 1
     if n_state >= 6:
-        edge_values[5] = 1.0   # g -> 1 (crossflow; 1 for swept, 0 for aligned, use 1 as placeholder)
+        edge_values[5] = 1.0  # g -> 1 (crossflow; 1 for swept, 0 for aligned, use 1 as placeholder)
 
     # linear ramp for each variable from wall value to expected edge value
     for i in range(n_state):

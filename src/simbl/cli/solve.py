@@ -56,7 +56,9 @@ def cmd_solve(
     ] = None,
     equations: Annotated[
         str | None,
-        typer.Option("--equations", help="Governing equations: falkner_skan or falkner_skan_cooke."),
+        typer.Option(
+            "--equations", help="Governing equations: falkner_skan or falkner_skan_cooke."
+        ),
     ] = None,
     eta_max: Annotated[
         float | None,
@@ -70,9 +72,9 @@ def cmd_solve(
     # output options
     # --------------------------------------------------
     output: Annotated[
-        Path,
-        typer.Option("--output", "-o", help="Output file (.dat or .json)."),
-    ] = Path("simbl.dat"),
+        Path | None,
+        typer.Option("--output", "-o", help="Override the configured output file."),
+    ] = None,
     quiet: Annotated[
         bool,
         typer.Option("--quiet", "-q", help="Suppress console output."),
@@ -84,9 +86,9 @@ def cmd_solve(
 
         simbl solve config.toml
 
-        simbl solve config.toml --mach 6.0 --output result.dat
+        simbl solve config.toml --mach 6.0
 
-        simbl solve --mach 4.0 --wall adiabatic --output result.dat
+        simbl solve config.toml --output one_off_result.dat
     """
 
     # load necessary functions and classes for config handling and solving
@@ -111,7 +113,10 @@ def cmd_solve(
     # if no config file is found, print an error and exit
     if config_path is None:
         typer.echo("No configuration file found.", err=True)
-        typer.echo("  Run `simbl init` to generate a template, or pass a config file as an argument.", err=True)
+        typer.echo(
+            "  Run `simbl init` to generate a template, or pass a config file as an argument.",
+            err=True,
+        )
         raise typer.Exit(1)
 
     # if the config file path does not exist, print an error and exit
@@ -166,6 +171,15 @@ def cmd_solve(
     # the config is split up into problem specification and solver options for user convenience
     problem, options = config_to_inputs(cfg)
 
+    # resolve explicit CLI output from the working directory and configured
+    # output relative to the configuration file
+    if output is not None:
+        output_path = output
+    else:
+        output_path = Path(cfg.output.filename)
+        if not output_path.is_absolute():
+            output_path = config_path.parent / output_path
+
     # --------------------------------------------------
     # run the solver
     # --------------------------------------------------
@@ -202,12 +216,15 @@ def cmd_solve(
     # --------------------------------------------------
 
     try:
-        write(sol, output, problem=problem, shooting_result=info)
+        write(
+            sol,
+            output_path,
+            problem=problem,
+            solver_options=options,
+            shooting_result=info,
+        )
     except Exception as error:
         typer.echo(f"Error writing output: {error}", err=True)
         raise typer.Exit(1) from None
     if not quiet:
-        typer.echo(f"  Output: {output}")
-
-
-
+        typer.echo(f"  Output: {output_path}")

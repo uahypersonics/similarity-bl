@@ -21,7 +21,7 @@ Write the similarity solution as JSON, then generate the baseflow mapping
 configuration:
 
 ```bash
-simbl solve simbl_config.toml --output simbl.json
+simbl solve simbl_config.toml
 simbl baseflow init
 ```
 

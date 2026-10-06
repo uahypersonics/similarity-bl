@@ -54,7 +54,9 @@ class SolverProblem:
     initial_guess: NDArray[np.float64]
     # boundary condition function for solve_bvp: bc(ya, yb) -> residual vector
     # encodes wall BCs in ya and edge BCs in yb; set by the model builder
-    bc_function: Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.float64]] | None = None
+    bc_function: (
+        Callable[[NDArray[np.float64], NDArray[np.float64]], NDArray[np.float64]] | None
+    ) = None
     # indices into the state vector y that correspond to the shooting variables
     # (the unknowns the shooting method optimises at the wall)
     # used by bvp_method to extract equivalent wall values from the BVP solution
@@ -82,6 +84,8 @@ class ShootingResult:
     """Converged shooting variable values at the wall (e.g., f''(0), g(0) or g'(0))"""
     residual: NDArray[np.float64]
     """Final residual vector at the edge (should be close to zero if converged)"""
+    method: str
+    """Numerical method that produced this result."""
     history: list[dict] | None = None
     """Per-iteration convergence history when options.store_history=True.
     Each entry: {"iteration": int, "shooting_vars": NDArray, "residual_norm": float}.
@@ -99,6 +103,7 @@ class ShootingResult:
             f"  converged   : {self.converged}",
             f"  timed_out   : {self.timed_out}",
             f"  iterations  : {self.iterations}",
+            f"  method      : {self.method}",
             f"  eta range   : [{self.eta[0]:.4g}, {self.eta[-1]:.4g}]  ({len(self.eta)} points)",
             f"  solution    : shape {self.solution.shape}",
             f"  shoot vars  : [{svars}]",
@@ -237,7 +242,6 @@ def shooting_method(
     history: list[dict] | None = [] if options.store_history else None
 
     for iteration in range(1, options.max_iterations + 1):  # noqa: B007
-
         # check wall-clock limit before doing any work this iteration
         # (t_shoot_start / deadline are set above, before the integrator helper)
         if time.monotonic() > deadline:
@@ -262,11 +266,13 @@ def shooting_method(
 
         # record convergence history if requested
         if history is not None:
-            history.append({
-                "iteration": iteration,
-                "shooting_vars": s.copy(),
-                "residual_norm": float(np.linalg.norm(F)),
-            })
+            history.append(
+                {
+                    "iteration": iteration,
+                    "shooting_vars": s.copy(),
+                    "residual_norm": float(np.linalg.norm(F)),
+                }
+            )
 
         # check convergence (tolerance defaults to 1e-8 if it is not user defined, see options.py)
         if np.all(np.abs(F) < options.tolerance):
@@ -282,7 +288,6 @@ def shooting_method(
 
         # loop over each shooting variable to compute finite difference columns
         for j in range(solver_problem.n_shooting):
-
             # true copy of shooting variables for forward and backward perturbations (avoid in-place modification issues)
             s_fwd = s.copy()
             s_bwd = s.copy()
@@ -310,8 +315,12 @@ def shooting_method(
             y_edge_bwd = y_raw_bwd[:, -1]
 
             # clamp non-finite edge values so Jacobian columns stay finite
-            y_edge_fwd = np.where(np.isfinite(y_edge_fwd), y_edge_fwd, np.sign(y_edge_fwd + 1) * 1.0e30)
-            y_edge_bwd = np.where(np.isfinite(y_edge_bwd), y_edge_bwd, np.sign(y_edge_bwd + 1) * 1.0e30)
+            y_edge_fwd = np.where(
+                np.isfinite(y_edge_fwd), y_edge_fwd, np.sign(y_edge_fwd + 1) * 1.0e30
+            )
+            y_edge_bwd = np.where(
+                np.isfinite(y_edge_bwd), y_edge_bwd, np.sign(y_edge_bwd + 1) * 1.0e30
+            )
 
             # compute residuals for forward and backward perturbations
             F_fwd = solver_problem.residual_function(y_edge_fwd)
@@ -347,9 +356,9 @@ def shooting_method(
 
             continue
 
-    #--------------------------------------------------
+    # --------------------------------------------------
     # final integration with converged shooting variables
-    #--------------------------------------------------
+    # --------------------------------------------------
     sol = _integrate(s)
 
     # --------------------------------------------------
@@ -393,5 +402,6 @@ def shooting_method(
         solution=sol.y,
         shooting_vars=s.copy(),
         residual=F,
+        method="shooting",
         history=history,
     )

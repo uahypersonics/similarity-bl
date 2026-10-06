@@ -13,7 +13,9 @@ and interoperability with other tools.
 from __future__ import annotations
 
 import json
-from datetime import datetime
+from dataclasses import asdict
+from datetime import UTC, datetime
+from importlib.metadata import version
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -23,8 +25,11 @@ if TYPE_CHECKING:
     from simbl.solver.falkner_skan.solution import FalknerSkanSolution
     from simbl.solver.falkner_skan_cooke.solution import FalknerSkanCookeSolution
     from simbl.solver.inputs import SimilarityInputs
+    from simbl.solver.options import SolverOptions
     from simbl.solver.shooting import ShootingResult
     from simbl.solver.solution import SimilaritySolution
+
+from simbl.transform import DEFAULT_ETA2Y_TRANSFORMS
 
 
 # --------------------------------------------------
@@ -34,6 +39,7 @@ def _write_json(
     solution: FalknerSkanSolution | FalknerSkanCookeSolution | SimilaritySolution,
     fname: Path,
     problem: SimilarityInputs | None = None,
+    solver_options: SolverOptions | None = None,
     shooting_result: ShootingResult | None = None,
 ) -> None:
     """Write similarity solution to JSON format
@@ -46,6 +52,8 @@ def _write_json(
         Output file path.
     problem : SimilarityInputs, optional
         Problem specification for metadata.
+    solver_options : SolverOptions, optional
+        Numerical solver settings for provenance metadata.
     shooting_result : ShootingResult, optional
         Shooting method convergence info.
     """
@@ -54,18 +62,29 @@ def _write_json(
     # build metadata: problem inputs, wall values, convergence info
     # mirrors the AUXDATA fields in the Tecplot writer
     # --------------------------------------------------
-    metadata: dict = {}
+    metadata: dict = {
+        "schema_version": 1,
+        "generator": {
+            "name": "similarity-bl",
+            "version": version("similarity-bl"),
+        },
+        "generated": datetime.now(UTC).isoformat(),
+    }
 
     # problem inputs (if provided)
     if problem is not None:
-        metadata["mach_edge"] = problem.mach_edge
-        metadata["temp_edge"] = problem.temp_edge
-        metadata["prandtl"] = problem.prandtl
-        metadata["gamma"] = problem.gamma
-        metadata["beta"] = problem.beta
-        metadata["wall_bc_type"] = problem.wall_bc
-        if problem.sweep_angle != 0.0:
-            metadata["sweep_angle"] = problem.sweep_angle
+        metadata["inputs"] = asdict(problem)
+
+    # numerical settings and transformed-coordinate convention
+    if solver_options is not None:
+        equations = solver_options.equations
+        metadata["solver"] = {
+            "equations": equations,
+            "configured_method": solver_options.solver_method,
+            "ode_method": solver_options.ode_method,
+        }
+        metadata["profile_transform"] = DEFAULT_ETA2Y_TRANSFORMS[equations]
+        metadata["numerics"] = asdict(solver_options)
 
     # wall values from solution
     metadata["fpp_wall"] = solution.fpp[0]
@@ -80,12 +99,19 @@ def _write_json(
 
     # convergence info (if provided)
     if shooting_result is not None:
-        metadata["converged"] = shooting_result.converged
-        metadata["iterations"] = shooting_result.iterations
+        if "solver" in metadata:
+            metadata["solver"]["method"] = shooting_result.method
+        metadata["convergence"] = {
+            "converged": shooting_result.converged,
+            "timed_out": shooting_result.timed_out,
+            "iterations": shooting_result.iterations,
+            "shooting_variables": shooting_result.shooting_vars.tolist(),
+            "residual": shooting_result.residual.tolist(),
+            "residual_norm": float(sum(value**2 for value in shooting_result.residual) ** 0.5),
+        }
 
     # bookkeeping
     metadata["n_points"] = len(solution.eta)
-    metadata["generated"] = datetime.now().isoformat()
 
     # --------------------------------------------------
     # build profiles: raw similarity variables + crossflow if FSC

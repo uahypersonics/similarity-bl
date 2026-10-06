@@ -93,7 +93,8 @@ def map_baseflow_to_grid(config: BaseflowConfig) -> Path:
 
     # map one similarity profile independently onto each wall-normal grid line
     ni, _, nk = grid.shape
-    beta = float(profile.metadata.get("beta", 0.0))
+    profile_inputs = profile.metadata.get("inputs", {})
+    beta = float(profile_inputs.get("beta", 0.0))
     nu_edge = visc_edge / dens_edge
     for streamwise_index in range(ni):
         for spanwise_index in range(nk):

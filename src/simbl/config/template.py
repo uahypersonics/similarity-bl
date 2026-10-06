@@ -74,6 +74,14 @@ max_iterations = 100
 ode_method = "LSODA"
 # maximum wall-clock time [s] for one solve call (increase for difficult cases)
 max_solve_time = 20.0
+
+# --------------------------------------------------
+# solution output
+# --------------------------------------------------
+
+[output]
+# output format is inferred from the .dat or .json filename
+filename = "simbl.json"
 """
 
 # --------------------------------------------------
@@ -145,6 +153,14 @@ max_iterations = 100
 ode_method = "LSODA"
 # maximum wall-clock time [s] for one solve call (increase for difficult cases)
 max_solve_time = 20.0
+
+# --------------------------------------------------
+# solution output
+# --------------------------------------------------
+
+[output]
+# output format is inferred from the .dat or .json filename
+filename = "simbl.json"
 """
 
 # --------------------------------------------------

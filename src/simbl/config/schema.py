@@ -7,6 +7,7 @@ Maps the TOML config format to validated Python objects:
     [wall]: wall boundary condition (type, temp_wall)
     [viscosity]: viscosity model selection and parameters
     [numerics]: numerical settings (grid, tolerances, ODE method)
+    [output]: solution artifact path (.dat or .json)
 """
 
 # --------------------------------------------------
@@ -108,6 +109,23 @@ class NumericsConfig(BaseModel):
 
 
 # --------------------------------------------------
+# OutputConfig: solution artifact
+# --------------------------------------------------
+class OutputConfig(BaseModel):
+    """Similarity solution output artifact."""
+
+    filename: str = Field(default="simbl.dat", min_length=1, description="Output path")
+
+    @field_validator("filename")
+    @classmethod
+    def _validate_filename(cls, value: str) -> str:
+        suffix = value.lower().rsplit(".", maxsplit=1)
+        if len(suffix) != 2 or suffix[1] not in {"dat", "json"}:
+            raise ValueError("output filename must use .dat or .json")
+        return value
+
+
+# --------------------------------------------------
 # top-level config
 # --------------------------------------------------
 class SolverConfig(BaseModel):
@@ -137,6 +155,9 @@ class SolverConfig(BaseModel):
         tolerance = 1e-8
         max_iterations = 100
         ode_method = "LSODA"
+
+        [output]
+        filename = "simbl.json"
     """
 
     # equations: which governing ODE system to solve
@@ -151,6 +172,7 @@ class SolverConfig(BaseModel):
     wall: WallConfig = Field(default_factory=WallConfig)
     viscosity: ViscosityConfig = Field(default_factory=ViscosityConfig)
     numerics: NumericsConfig = Field(default_factory=NumericsConfig)
+    output: OutputConfig = Field(default_factory=OutputConfig)
 
     @field_validator("equations")
     @classmethod

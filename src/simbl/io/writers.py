@@ -20,6 +20,7 @@ if TYPE_CHECKING:
     from simbl.solver.falkner_skan_cooke.solution import FalknerSkanCookeSolution
     from simbl.solver.inputs import SimilarityInputs
     from simbl.solver.main import ShootingResult
+    from simbl.solver.options import SolverOptions
     from simbl.solver.solution import SimilaritySolution
 
 from simbl.io.json_writer import _write_json
@@ -50,6 +51,7 @@ def write(
     fname: str | Path,
     *,
     problem: SimilarityInputs | None = None,
+    solver_options: SolverOptions | None = None,
     shooting_result: ShootingResult | None = None,
 ) -> Path:
     """Write solution to file, format auto-detected from extension
@@ -62,6 +64,8 @@ def write(
         Output file path. Format determined by extension.
     problem : SimilarityInputs, optional
         Problem specification for metadata.
+    solver_options : SolverOptions, optional
+        Numerical solver settings for provenance metadata.
     shooting_result : ShootingResult, optional
         Convergence info for metadata.
 
@@ -91,6 +95,12 @@ def write(
 
     # dispatch to the registered writer function
     writer = _WRITERS[ext]
-    writer(solution, fname, problem=problem, shooting_result=shooting_result)
+    writer(
+        solution,
+        fname,
+        problem=problem,
+        solver_options=solver_options,
+        shooting_result=shooting_result,
+    )
 
     return fname
