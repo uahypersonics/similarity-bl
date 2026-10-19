@@ -36,22 +36,15 @@ from simbl.io.toml_writer import _write_toml
 def config_load(fname: str | Path) -> SolverConfig:
     """Load and validate a TOML configuration file
 
-    Parameters
-    ----------
-    fname : str or Path
-        Path to the TOML configuration file.
+    Args:
+        fname (str or Path): Path to the TOML configuration file.
 
-    Returns
-    -------
-    SolverConfig
-        Validated solver configuration.
+    Returns:
+        SolverConfig: Validated solver configuration.
 
-    Raises
-    ------
-    FileNotFoundError
-        If the file does not exist.
-    ValueError
-        If validation fails.
+    Raises:
+        FileNotFoundError: If the file does not exist.
+        ValueError: If validation fails.
     """
 
     fname = Path(fname)
@@ -70,12 +63,9 @@ def config_load(fname: str | Path) -> SolverConfig:
 def config_save(config: SolverConfig, fname: str | Path) -> None:
     """Write a SolverConfig to a TOML file
 
-    Parameters
-    ----------
-    config : SolverConfig
-        Validated solver configuration to save.
-    fname : str or Path
-        Output file path.
+    Args:
+        config (SolverConfig): Validated solver configuration to save.
+        fname (str or Path): Output file path.
     """
 
     # convert fname to Path object
@@ -108,28 +98,18 @@ def config_init(
 ) -> list[str]:
     """Write a template configuration file to disk
 
-    Parameters
-    ----------
-    fname : str or Path
-        Output file path.
-    equations : str
-        Template type: 'fs' (Falkner-Skan, default) or 'fsc' (Falkner-Skan-Cooke).
-    force : bool
-        If False (default), raises FileExistsError if file already exists.
-    flow_state : str or Path, optional
-        Canonical FlowState JSON used to initialize edge and gas properties.
+    Args:
+        fname (str or Path): Output file path.
+        equations (str): Template type: 'fs' (Falkner-Skan, default) or 'fsc' (Falkner-Skan-Cooke).
+        force (bool): If False (default), raises FileExistsError if file already exists.
+        flow_state (str or Path, optional): Canonical FlowState JSON used to initialize edge and gas properties.
 
-    Returns
-    -------
-    list[str]
-        Warnings for optional FlowState properties that could not be imported.
+    Returns:
+        list[str]: Warnings for optional FlowState properties that could not be imported.
 
-    Raises
-    ------
-    FileExistsError
-        If file exists and force=False.
-    ValueError
-        If equations is not 'fs' or 'fsc'.
+    Raises:
+        FileExistsError: If file exists and force=False.
+        ValueError: If equations is not 'fs' or 'fsc'.
     """
     fname = Path(fname)
     if fname.exists() and not force:
@@ -169,22 +149,15 @@ def _initialize_template_from_flow_state(
 ) -> tuple[str, list[str]]:
     """Populate a SIMBL template from a canonical FlowState JSON file.
 
-    Parameters
-    ----------
-    template : str
-        SIMBL TOML template text.
-    flow_state_path : str or Path
-        Canonical FlowState JSON path.
+    Args:
+        template (str): SIMBL TOML template text.
+        flow_state_path (str or Path): Canonical FlowState JSON path.
 
-    Returns
-    -------
-    tuple[str, list[str]]
-        Updated template text and consistency warnings.
+    Returns:
+        tuple[str, list[str]]: Updated template text and consistency warnings.
 
-    Raises
-    ------
-    ValueError
-        If the FlowState does not contain required edge properties.
+    Raises:
+        ValueError: If the FlowState does not contain required edge properties.
     """
     from flow_state.io import read_json
 
@@ -263,16 +236,12 @@ def _replace_template_value(template: str, field: str, value: float) -> str:
 def config_to_inputs(config: SolverConfig) -> tuple[SimilarityInputs, SolverOptions]:
     """Convert a SolverConfig into SimilarityInputs and SolverOptions
 
-    Parameters
-    ----------
-    config : SolverConfig
-        Validated solver configuration.
+    Args:
+        config (SolverConfig): Validated solver configuration.
 
-    Returns
-    -------
-    tuple[SimilarityInputs, SolverOptions]
-        Problem specification and solver options.
-        The equations field on SolverOptions carries config.equations.
+    Returns:
+        tuple[SimilarityInputs, SolverOptions]: Problem specification and solver options.
+            The equations field on SolverOptions carries config.equations.
     """
     from simbl.solver.inputs import SimilarityInputs
     from simbl.solver.options import SolverOptions

@@ -37,20 +37,14 @@ def available_example_names() -> list[str]:
 def get_example_text(name: str) -> str:
     """Return TOML text for the named example.
 
-    Parameters
-    ----------
-    name : str
-        Example name (key in EXAMPLES_REGISTRY).
+    Args:
+        name (str): Example name (key in EXAMPLES_REGISTRY).
 
-    Returns
-    -------
-    str
-        TOML file contents as a string.
+    Returns:
+        str: TOML file contents as a string.
 
-    Raises
-    ------
-    KeyError
-        If name is not in the registry.
+    Raises:
+        KeyError: If name is not in the registry.
     """
     if name not in EXAMPLES_REGISTRY:
         raise KeyError(f"Unknown example {name!r}. Available: {available_example_names()}")

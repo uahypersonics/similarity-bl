@@ -41,26 +41,19 @@ def bvp_method(
 ) -> ShootingResult:
     """Solve the similarity BVP using scipy.integrate.solve_bvp (collocation)
 
-    Parameters
-    ----------
-    solver_problem : SolverProblem
-        Problem definition. Must have bc_function and shooting_var_indices set.
-    options : SolverOptions
-        Numerical settings (eta_max, n_points, tolerance used).
-    initial_profile : ShootingResult, optional
-        Converged solution from an adjacent parameter point (e.g. previous
-        Mach) to use as the BVP initial mesh guess.  Takes priority over the
-        physics-based profile.  If None, falls through to Crocco-Busemann.
-    problem : SimilarityInputs, optional
-        Physics specification.  When provided and initial_profile is None,
-        the Crocco-Busemann profile (profiles.py) is used as the initial
-        guess.  When both are None, falls back to a linear ramp.
+    Args:
+        solver_problem (SolverProblem): Problem definition. Must have bc_function and shooting_var_indices set.
+        options (SolverOptions): Numerical settings (eta_max, n_points, tolerance used).
+        initial_profile (ShootingResult, optional): Converged solution from an adjacent parameter point (e.g. previous
+            Mach) to use as the BVP initial mesh guess.  Takes priority over the
+            physics-based profile.  If None, falls through to Crocco-Busemann.
+        problem (SimilarityInputs, optional): Physics specification.  When provided and initial_profile is None,
+            the Crocco-Busemann profile (profiles.py) is used as the initial
+            guess.  When both are None, falls back to a linear ramp.
 
-    Returns
-    -------
-    ShootingResult
-        Result in the same format as shooting_method. shooting_vars contains
-        the wall derivative values extracted from the BVP solution.
+    Returns:
+        ShootingResult: Result in the same format as shooting_method. shooting_vars contains
+            the wall derivative values extracted from the BVP solution.
     """
 
     # validate: make sure bc_function is set
@@ -182,19 +175,13 @@ def _interpolate_profile(
 ) -> NDArray[np.float64]:
     """Interpolate a solution profile from one eta grid to another
 
-    Parameters
-    ----------
-    eta_old : NDArray
-        Original eta grid (1-D, sorted ascending).
-    y_old : NDArray
-        Solution array, shape (n_vars, len(eta_old)).
-    eta_new : NDArray
-        Target eta grid.
+    Args:
+        eta_old (NDArray): Original eta grid (1-D, sorted ascending).
+        y_old (NDArray): Solution array, shape (n_vars, len(eta_old)).
+        eta_new (NDArray): Target eta grid.
 
-    Returns
-    -------
-    NDArray
-        Interpolated profile, shape (n_vars, len(eta_new)).
+    Returns:
+        NDArray: Interpolated profile, shape (n_vars, len(eta_new)).
     """
     n_vars = y_old.shape[0]
     y_new = np.zeros((n_vars, len(eta_new)))
@@ -223,19 +210,13 @@ def _build_ramp_profile(
         g   -> 1   (crossflow velocity reaches edge value, FSC only)
         others -> 0
 
-    Parameters
-    ----------
-    y_wall : NDArray
-        Initial condition vector at the wall (from build_initial_condition).
-    n_state : int
-        Number of state variables (5 for FS, 7 for FSC).
-    eta : NDArray
-        Eta grid to evaluate on.
+    Args:
+        y_wall (NDArray): Initial condition vector at the wall (from build_initial_condition).
+        n_state (int): Number of state variables (5 for FS, 7 for FSC).
+        eta (NDArray): Eta grid to evaluate on.
 
-    Returns
-    -------
-    NDArray
-        Profile array, shape (n_state, len(eta)).
+    Returns:
+        NDArray: Profile array, shape (n_state, len(eta)).
     """
     n_pts = len(eta)
     y = np.zeros((n_state, n_pts))
@@ -274,19 +255,13 @@ def _clustered_mesh(eta_max: float, n: int, alpha: float = 4.0) -> NDArray[np.fl
     At alpha=4: ~50% of points fall in the first 15% of the domain.
     At alpha=0 (limit): recovers uniform spacing.
 
-    Parameters
-    ----------
-    eta_max : float
-        Outer edge of the domain.
-    n : int
-        Number of mesh points.
-    alpha : float
-        Clustering strength.  Larger = more points near the wall.
+    Args:
+        eta_max (float): Outer edge of the domain.
+        n (int): Number of mesh points.
+        alpha (float): Clustering strength.  Larger = more points near the wall.
 
-    Returns
-    -------
-    NDArray
-        Monotonically increasing eta grid of length n, starting at 0.
+    Returns:
+        NDArray: Monotonically increasing eta grid of length n, starting at 0.
     """
     # uniform parameter t in [0, 1]
     t = np.linspace(0.0, 1.0, n)

@@ -41,23 +41,15 @@ def build_solver_problem(
 ) -> SolverProblem:
     """Build a SolverProblem for the Falkner-Skan-Cooke model
 
-    Parameters
-    ----------
-    problem : SimilarityInputs
-        Physics specification (including sweep_angle).
-    visc_model : TransportModel
-        Viscosity model instance.
-    initial_fpp : float, optional
-        Override initial guess for f''(0).
-    initial_wp : float, optional
-        Override initial guess for g_cf'(0) (crossflow velocity gradient at wall).
-    initial_gvar : float, optional
-        Override initial guess for tau'(0) (isothermal) or tau(0) (adiabatic).
+    Args:
+        problem (SimilarityInputs): Physics specification (including sweep_angle).
+        visc_model (TransportModel): Viscosity model instance.
+        initial_fpp (float, optional): Override initial guess for f''(0).
+        initial_wp (float, optional): Override initial guess for g_cf'(0) (crossflow velocity gradient at wall).
+        initial_gvar (float, optional): Override initial guess for tau'(0) (isothermal) or tau(0) (adiabatic).
 
-    Returns
-    -------
-    SolverProblem
-        Ready-to-solve problem for the generic shooter.
+    Returns:
+        SolverProblem: Ready-to-solve problem for the generic shooter.
     """
     # --------------------------------------------------
     # resolve initial guess

@@ -36,16 +36,11 @@ class LookupTable:
 
     Seed data is shipped with the package and is read only.
 
-    Parameters
-    ----------
-    key_fields : list[str]
-        Field names that form the lookup key (e.g. ["mach", "beta"])
-    value_fields : list[str]
-        Field names for stored values (e.g. ["fpp_wall", "g_wall"])
-    default_values : list[float]
-        Fallback values when table is empty (e.g. [0.615, 3.69] for adiabatic flat plate)
-    fname : str
-        JSON filename for lookup table data (e.g. "fsc_lookup.json")
+    Args:
+        key_fields (list[str]): Field names that form the lookup key (e.g. ["mach", "beta"])
+        value_fields (list[str]): Field names for stored values (e.g. ["fpp_wall", "g_wall"])
+        default_values (list[float]): Fallback values when table is empty (e.g. [0.615, 3.69] for adiabatic flat plate)
+        fname (str): JSON filename for lookup table data (e.g. "fsc_lookup.json")
     """
 
     # --------------------------------------------------
@@ -170,15 +165,11 @@ class LookupTable:
     def predict(self, key_values: dict[str, float]) -> NDArray[np.float64]:
         """Predict initial guess values from tabulated data using inverse-distance weighted interpolation
 
-        Parameters
-        ----------
-        key_values : dict[str, float]
-            Key field values as {field_name: value} for each key_field
+        Args:
+            key_values (dict[str, float]): Key field values as {field_name: value} for each key_field
 
-        Returns
-        -------
-        NDArray[np.float64]
-            Predicted shooting variable values
+        Returns:
+            NDArray[np.float64]: Predicted shooting variable values
         """
 
         # if no usable entries are loaded, return default values

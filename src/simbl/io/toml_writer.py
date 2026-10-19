@@ -20,12 +20,9 @@ import tomli_w
 def _write_toml(data: dict, fname: Path) -> None:
     """Write a plain dict to a TOML file
 
-    Parameters
-    ----------
-    data : dict
-        Data to serialize. Must be TOML-compatible (no None values, etc.).
-    fname : Path
-        Output file path. Parent directory must exist.
+    Args:
+        data (dict): Data to serialize. Must be TOML-compatible (no None values, etc.).
+        fname (Path): Output file path. Parent directory must exist.
     """
     with open(fname, "wb") as f:
         tomli_w.dump(data, f)

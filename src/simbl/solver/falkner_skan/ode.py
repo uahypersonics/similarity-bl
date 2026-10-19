@@ -54,21 +54,14 @@ def bl_ode(
 ) -> NDArray[np.float64]:
     """Compressible boundary layer ODE system (5 equations)
 
-    Parameters
-    ----------
-    eta : float
-        Similarity coordinate (independent variable).
-    y : NDArray[np.float64]
-        State vector [f, f', f'', tau, tau'].
-    problem : SimilarityInputs
-        Physics specification (Mach, Pr, gamma, beta, temp_edge).
-    visc_model : TransportModel
-        Viscosity model instance (from flow_state).
+    Args:
+        eta (float): Similarity coordinate (independent variable).
+        y (NDArray[np.float64]): State vector [f, f', f'', tau, tau'].
+        problem (SimilarityInputs): Physics specification (Mach, Pr, gamma, beta, temp_edge).
+        visc_model (TransportModel): Viscosity model instance (from flow_state).
 
-    Returns
-    -------
-    NDArray[np.float64]
-        Derivatives [f', f'', f''', tau', tau''].
+    Returns:
+        NDArray[np.float64]: Derivatives [f', f'', f''', tau', tau''].
     """
 
     # unpack state vector

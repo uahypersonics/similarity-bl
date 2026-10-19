@@ -15,47 +15,46 @@ Typical multi-station workflow
 2. For each downstream station xi, call compute_local_temp_edge() to get T_e.
 3. Pass the result as temp_edge into SimilarityInputs for that station.
 
-Example
--------
->>> from simbl.solver.falkner_skan_cooke.station import compute_local_temp_edge
->>> from simbl import SimilarityInputs, SolverOptions, solve_similarity
->>>
->>> # Reference conditions (e.g. attachment line)
->>> mach_ref  = 3.0
->>> temp_ref  = 280.0  # K
->>> gamma     = 1.4
->>> beta      = 0.0    # flat plate
->>> sweep_deg = 45.0
->>>
->>> # Solve at a downstream station where xi / xi_ref = 1.5
->>> xi_ratio = 1.5
->>> temp_local = compute_local_temp_edge(
-...     mach_ref=mach_ref,
-...     temp_ref=temp_ref,
-...     xi_over_xi_ref=xi_ratio,
-...     beta=beta,
-...     gamma=gamma,
-...     sweep_angle_deg=sweep_deg,
-... )
->>>
->>> inputs = SimilarityInputs(
-...     mach_edge=mach_ref,   # reference Mach (see note in function docstring)
-...     temp_edge=temp_local, # local temperature computed above
-...     wall_bc="adiabatic",
-...     sweep_angle=sweep_deg,
-...     beta=beta,
-... )
+Example:
+    >>> from simbl.solver.falkner_skan_cooke.station import compute_local_temp_edge
+    >>> from simbl import SimilarityInputs, SolverOptions, solve_similarity
+    >>>
+    >>> # Reference conditions (e.g. attachment line)
+    >>> mach_ref  = 3.0
+    >>> temp_ref  = 280.0  # K
+    >>> gamma     = 1.4
+    >>> beta      = 0.0    # flat plate
+    >>> sweep_deg = 45.0
+    >>>
+    >>> # Solve at a downstream station where xi / xi_ref = 1.5
+    >>> xi_ratio = 1.5
+    >>> temp_local = compute_local_temp_edge(
+    ...     mach_ref=mach_ref,
+    ...     temp_ref=temp_ref,
+    ...     xi_over_xi_ref=xi_ratio,
+    ...     beta=beta,
+    ...     gamma=gamma,
+    ...     sweep_angle_deg=sweep_deg,
+    ... )
+    >>>
+    >>> inputs = SimilarityInputs(
+    ...     mach_edge=mach_ref,   # reference Mach (see note in function docstring)
+    ...     temp_edge=temp_local, # local temperature computed above
+    ...     wall_bc="adiabatic",
+    ...     sweep_angle=sweep_deg,
+    ...     beta=beta,
+    ... )
 
-Note on mach_edge
------------------
-Liu's formulation uses Ma_{e,ref} (the reference-station Mach) throughout
-the ODE coefficients -- the local variation in edge velocity is absorbed into
-the chi = (xi/xi_ref)^m scaling that feeds S and T_e. Because the solver
-always operates at chi=1, the correct mach_edge to pass into SimilarityInputs
-is still Ma_{e,ref} for all stations.
+    Note on mach_edge
+    -----------------
+    Liu's formulation uses Ma_{e,ref} (the reference-station Mach) throughout
+    the ODE coefficients -- the local variation in edge velocity is absorbed into
+    the chi = (xi/xi_ref)^m scaling that feeds S and T_e. Because the solver
+    always operates at chi=1, the correct mach_edge to pass into SimilarityInputs
+    is still Ma_{e,ref} for all stations.
 
-If your inviscid solution gives you an explicitly varying Ma_e(xi), use that
-value directly instead of Ma_{e,ref}.
+    If your inviscid solution gives you an explicitly varying Ma_e(xi), use that
+    value directly instead of Ma_{e,ref}.
 """
 
 # --------------------------------------------------
@@ -86,32 +85,21 @@ def compute_local_temp_edge(
         S_ref = S evaluated at chi=1 (= denominator of K)
         T_e = T_{e,ref} * S_ref / S              [Eq. 20]
 
-    Parameters
-    ----------
-    mach_ref : float
-        Edge Mach number at the reference station (Ma_{e,ref}).
-    temp_ref : float
-        Edge temperature at the reference station [K].
-    xi_over_xi_ref : float
-        Station ratio xi / xi_ref. Use 1.0 to recover T_{e,ref}.
-    beta : float
-        Hartree pressure gradient parameter beta = 2m/(m+1).
-        beta=0 is a flat plate; beta=1 is stagnation.
-    gamma : float
-        Specific heat ratio (1.4 for air).
-    sweep_angle_deg : float
-        Sweep angle [degrees].
+    Args:
+        mach_ref (float): Edge Mach number at the reference station (Ma_{e,ref}).
+        temp_ref (float): Edge temperature at the reference station [K].
+        xi_over_xi_ref (float): Station ratio xi / xi_ref. Use 1.0 to recover T_{e,ref}.
+        beta (float): Hartree pressure gradient parameter beta = 2m/(m+1).
+            beta=0 is a flat plate; beta=1 is stagnation.
+        gamma (float): Specific heat ratio (1.4 for air).
+        sweep_angle_deg (float): Sweep angle [degrees].
 
-    Returns
-    -------
-    float
-        Local edge temperature T_e [K] at station xi.
-        Pass this as temp_edge into SimilarityInputs.
+    Returns:
+        float: Local edge temperature T_e [K] at station xi.
+            Pass this as temp_edge into SimilarityInputs.
 
-    Raises
-    ------
-    ValueError
-        If mach_ref, temp_ref, or xi_over_xi_ref are non-positive.
+    Raises:
+        ValueError: If mach_ref, temp_ref, or xi_over_xi_ref are non-positive.
     """
     # --------------------------------------------------
     # validate inputs

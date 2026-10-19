@@ -41,7 +41,7 @@ ruff format .
 ```
 
 The CI pipeline runs both checks automatically. See the code style table in
-[README.md](README.md) for the full conventions (PEP 8, PEP 257, numpydoc).
+[README.md](README.md) for the full conventions (PEP 8, PEP 257, Google style).
 
 ## Building the Documentation
 

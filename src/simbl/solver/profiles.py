@@ -140,23 +140,15 @@ def crocco_tau(
         tau(fp=0) = tau_w  (wall)
         tau(fp=1) = 1      (edge)
 
-    Parameters
-    ----------
-    fp : NDArray
-        Normalized velocity profile u/ue.  Values should lie in [0, 1].
-    tau_w : float
-        Wall temperature ratio Tw/Te.
-    mach : float
-        Edge Mach number.
-    gamma : float, optional
-        Specific heat ratio.  Default 1.4 (air).
-    prandtl : float, optional
-        Prandtl number.  Default 0.72 (air).
+    Args:
+        fp (NDArray): Normalized velocity profile u/ue.  Values should lie in [0, 1].
+        tau_w (float): Wall temperature ratio Tw/Te.
+        mach (float): Edge Mach number.
+        gamma (float, optional): Specific heat ratio.  Default 1.4 (air).
+        prandtl (float, optional): Prandtl number.  Default 0.72 (air).
 
-    Returns
-    -------
-    NDArray
-        Temperature ratio T/Te, same shape as fp.
+    Returns:
+        NDArray: Temperature ratio T/Te, same shape as fp.
     """
     # recovery factor: Pohlhausen approximation r = Pr^(1/3)
     r = prandtl ** (1.0 / 3.0)
@@ -181,28 +173,20 @@ def build_initial_profile(
     the wall and edge boundary conditions exactly and encodes the compressible
     temperature distribution via the Crocco-Busemann approximation.
 
-    Parameters
-    ----------
-    problem : SimilarityInputs
-        Physics specification.  Provides Mach, gamma, Pr, wall BC, and Tw/Te.
-    solver_problem : SolverProblem
-        Solver problem definition.  Used to determine state vector size and
-        to extract the wall boundary condition initial state.
-    eta : NDArray
-        Similarity coordinate array for the initial mesh (output of clustered_mesh).
-    shape : str, optional
-        Profile shape function.  One of "erf" (default), "cubic", "exponential".
-        "erf" best matches the Blasius flat-plate profile.
-    delta_fraction : float, optional
-        Fraction of eta_max used as the boundary layer thickness estimate delta.
-        The velocity and temperature profiles reach their edge values at eta=delta
-        and remain flat for eta > delta.  Default 0.8 (80% of domain).
+    Args:
+        problem (SimilarityInputs): Physics specification.  Provides Mach, gamma, Pr, wall BC, and Tw/Te.
+        solver_problem (SolverProblem): Solver problem definition.  Used to determine state vector size and
+            to extract the wall boundary condition initial state.
+        eta (NDArray): Similarity coordinate array for the initial mesh (output of clustered_mesh).
+        shape (str, optional): Profile shape function.  One of "erf" (default), "cubic", "exponential".
+            "erf" best matches the Blasius flat-plate profile.
+        delta_fraction (float, optional): Fraction of eta_max used as the boundary layer thickness estimate delta.
+            The velocity and temperature profiles reach their edge values at eta=delta
+            and remain flat for eta > delta.  Default 0.8 (80% of domain).
 
-    Returns
-    -------
-    NDArray
-        Initial profile array, shape (n_state, len(eta)).  Ready to pass to
-        scipy.integrate.solve_bvp as the ``y`` argument.
+    Returns:
+        NDArray: Initial profile array, shape (n_state, len(eta)).  Ready to pass to
+            scipy.integrate.solve_bvp as the ``y`` argument.
     """
 
     # validate shape (is it in registry?)

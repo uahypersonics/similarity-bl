@@ -24,20 +24,13 @@ if TYPE_CHECKING:
 class FalknerSkanSolution:
     """Container for Falkner-Skan similarity solution data
 
-    Attributes
-    ----------
-    eta : ndarray
-        Similarity coordinate
-    f : ndarray
-        Stream function
-    fp : ndarray
-        Velocity ratio u/u_e
-    fpp : ndarray
-        Velocity gradient d^2f/deta^2
-    tau : ndarray
-        Temperature ratio T/T_e
-    taup : ndarray
-        Temperature gradient dg/deta
+    Attributes:
+        eta (ndarray): Similarity coordinate
+        f (ndarray): Stream function
+        fp (ndarray): Velocity ratio u/u_e
+        fpp (ndarray): Velocity gradient d^2f/deta^2
+        tau (ndarray): Temperature ratio T/T_e
+        taup (ndarray): Temperature gradient dg/deta
     """
 
     # grid
@@ -108,19 +101,15 @@ class FalknerSkanSolution:
 def build_solution(result: ShootingResult) -> FalknerSkanSolution:
     """Extract profiles from shooting result into solution dataclass
 
-    Parameters
-    ----------
-    result : ShootingResult
-        Converged shooting method result with 5-row solution array
+    Args:
+        result (ShootingResult): Converged shooting method result with 5-row solution array
 
-    Returns
-    -------
-    FalknerSkanSolution
-        Named solution profiles
-        Contains:
-        - eta: similarity coordinate
-        - f, fp, fpp: stream function and velocity profiles
-        - tau, taup: temperature profile and gradient
+    Returns:
+        FalknerSkanSolution: Named solution profiles
+            Contains:
+            - eta: similarity coordinate
+            - f, fp, fpp: stream function and velocity profiles
+            - tau, taup: temperature profile and gradient
     """
 
     # map solution array rows to corresponding dataclass fields

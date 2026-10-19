@@ -44,18 +44,12 @@ def _write_json(
 ) -> None:
     """Write similarity solution to JSON format
 
-    Parameters
-    ----------
-    solution : FalknerSkanSolution | FalknerSkanCookeSolution
-        Similarity solution to write.
-    fname : Path
-        Output file path.
-    problem : SimilarityInputs, optional
-        Problem specification for metadata.
-    solver_options : SolverOptions, optional
-        Numerical solver settings for provenance metadata.
-    shooting_result : ShootingResult, optional
-        Shooting method convergence info.
+    Args:
+        solution (FalknerSkanSolution | FalknerSkanCookeSolution): Similarity solution to write.
+        fname (Path): Output file path.
+        problem (SimilarityInputs, optional): Problem specification for metadata.
+        solver_options (SolverOptions, optional): Numerical solver settings for provenance metadata.
+        shooting_result (ShootingResult, optional): Shooting method convergence info.
     """
 
     # --------------------------------------------------

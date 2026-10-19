@@ -39,22 +39,14 @@ def _write_tecplot(
 ) -> None:
     """Write similarity solution to Tecplot ASCII format
 
-    Parameters
-    ----------
-    solution : FalknerSkanSolution | FalknerSkanCookeSolution
-        Similarity solution to write.
-    fname : Path
-        Output file path.
-    problem : SimilarityInputs, optional
-        Problem specification for metadata.
-    solver_options : SolverOptions, optional
-        Numerical solver settings for provenance metadata.
-    title : str, optional
-        Title for the Tecplot file header.
-    zone_name : str, optional
-        Zone name in Tecplot file.
-    shooting_result : ShootingResult, optional
-        Shooting method convergence info.
+    Args:
+        solution (FalknerSkanSolution | FalknerSkanCookeSolution): Similarity solution to write.
+        fname (Path): Output file path.
+        problem (SimilarityInputs, optional): Problem specification for metadata.
+        solver_options (SolverOptions, optional): Numerical solver settings for provenance metadata.
+        title (str, optional): Title for the Tecplot file header.
+        zone_name (str, optional): Zone name in Tecplot file.
+        shooting_result (ShootingResult, optional): Shooting method convergence info.
     """
 
     # --------------------------------------------------

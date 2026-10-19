@@ -27,40 +27,29 @@ if TYPE_CHECKING:
 class SolverOptions:
     """Numerical settings for the similarity solver
 
-    Parameters
-    ----------
-    eta_max : float, optional
-        Maximum similarity coordinate. Default 15.0.
-    n_points : int, optional
-        Number of grid points. Default 500.
-    tolerance : float, optional
-        Convergence tolerance for shooting method. Default 1e-8.
-    max_iterations : int, optional
-        Maximum shooting iterations. Default 100.
-    ode_method : str, optional
-        SciPy ODE solver method. Default "LSODA".
-    epsilon : float, optional
-        Perturbation step size for finite-difference Jacobian. Default 0.005.
-    relaxation_factor : float, optional
-        Factor to reduce epsilon by when the Jacobian is singular. Default 0.5.
-    equations : str, optional
-        Governing equations: 'falkner_skan' (2D) or 'falkner_skan_cooke' (3D). Default 'falkner_skan'.
-    max_solve_time : float, optional
-        Maximum wall-clock time [seconds] for the entire shooting method call. Default 20.0.
+    Args:
+        eta_max (float, optional): Maximum similarity coordinate. Default 15.0.
+        n_points (int, optional): Number of grid points. Default 500.
+        tolerance (float, optional): Convergence tolerance for shooting method. Default 1e-8.
+        max_iterations (int, optional): Maximum shooting iterations. Default 100.
+        ode_method (str, optional): SciPy ODE solver method. Default "LSODA".
+        epsilon (float, optional): Perturbation step size for finite-difference Jacobian. Default 0.005.
+        relaxation_factor (float, optional): Factor to reduce epsilon by when the Jacobian is singular. Default 0.5.
+        equations (str, optional): Governing equations: 'falkner_skan' (2D) or 'falkner_skan_cooke' (3D). Default 'falkner_skan'.
+        max_solve_time (float, optional): Maximum wall-clock time [seconds] for the entire shooting method call. Default 20.0.
 
-    Examples
-    --------
-    Default options (suitable for most cases):
+    Examples:
+        Default options (suitable for most cases):
 
-    >>> options = SolverOptions()
+        >>> options = SolverOptions()
 
-    Higher resolution and tighter tolerance:
+        Higher resolution and tighter tolerance:
 
-    >>> options = SolverOptions(
-    ...     n_points=500,
-    ...     eta_max=20.0,
-    ...     tolerance=1e-10,
-    ... )
+        >>> options = SolverOptions(
+        ...     n_points=500,
+        ...     eta_max=20.0,
+        ...     tolerance=1e-10,
+        ... )
     """
 
     # --------------------------------------------------
@@ -188,22 +177,17 @@ def default_options(inputs: SimilarityInputs) -> SolverOptions:
     problem description so that an inexperienced user does not need to tune them
     manually.  All other options take the standard dataclass defaults.
 
-    Parameters
-    ----------
-    inputs : SimilarityInputs
-        Physical problem description (Mach, beta, wall BC, equations, etc.).
+    Args:
+        inputs (SimilarityInputs): Physical problem description (Mach, beta, wall BC, equations, etc.).
 
-    Returns
-    -------
-    SolverOptions
-        Solver options calibrated for the given inputs.
+    Returns:
+        SolverOptions: Solver options calibrated for the given inputs.
 
-    Examples
-    --------
-    >>> from simbl import SimilarityInputs, default_options, solve_similarity
-    >>> inputs = SimilarityInputs(mach_edge=0.5, temp_edge=300.0, beta=0.8)
-    >>> options = default_options(inputs)
-    >>> solution, result = solve_similarity(inputs, options)
+    Examples:
+        >>> from simbl import SimilarityInputs, default_options, solve_similarity
+        >>> inputs = SimilarityInputs(mach_edge=0.5, temp_edge=300.0, beta=0.8)
+        >>> options = default_options(inputs)
+        >>> solution, result = solve_similarity(inputs, options)
     """
 
     # --------------------------------------------------

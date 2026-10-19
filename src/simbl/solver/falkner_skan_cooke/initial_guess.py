@@ -27,19 +27,13 @@ def build_y0(
 ) -> NDArray[np.float64]:
     """Build 7-element initial condition vector for FSC ODE integration
 
-    Parameters
-    ----------
-    wall_bc : str
-        Wall boundary condition type: "isothermal" or "adiabatic".
-    tau_wall : float or None
-        Normalized wall temperature T_w / T_e (isothermal only).
-    shooting_vars : NDArray[np.float64]
-        Shooting variables [f''(0), g_cf'(0), tau_var].
+    Args:
+        wall_bc (str): Wall boundary condition type: "isothermal" or "adiabatic".
+        tau_wall (float or None): Normalized wall temperature T_w / T_e (isothermal only).
+        shooting_vars (NDArray[np.float64]): Shooting variables [f''(0), g_cf'(0), tau_var].
 
-    Returns
-    -------
-    NDArray[np.float64]
-        Initial conditions [f(0), f'(0), f''(0), tau(0), tau'(0), g(0), g'(0)].
+    Returns:
+        NDArray[np.float64]: Initial conditions [f(0), f'(0), f''(0), tau(0), tau'(0), g(0), g'(0)].
     """
     fpp_0 = shooting_vars[0]
     gcfp_0 = shooting_vars[1]
@@ -66,17 +60,12 @@ def get_initial_guess(
 ) -> NDArray[np.float64]:
     """Get initial guess for FSC shooting method
 
-    Parameters
-    ----------
-    wall_bc : str
-        Wall boundary condition type: "isothermal" or "adiabatic".
-    key_values : dict[str, float]
-        Key field values for lookup (must contain all key_fields for this wall BC).
+    Args:
+        wall_bc (str): Wall boundary condition type: "isothermal" or "adiabatic".
+        key_values (dict[str, float]): Key field values for lookup (must contain all key_fields for this wall BC).
 
-    Returns
-    -------
-    NDArray[np.float64]
-        Predicted shooting variable values.
+    Returns:
+        NDArray[np.float64]: Predicted shooting variable values.
     """
 
     # adiabatic: key = (mach, beta, sweep_angle, temp_edge),  values = (fpp_wall, gcfp_wall, g_wall)

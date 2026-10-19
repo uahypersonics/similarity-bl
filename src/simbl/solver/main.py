@@ -51,51 +51,40 @@ def solve_similarity(
     forwarded directly to :class:`~simbl.solver.inputs.SimilarityInputs`.
     ``mach`` is accepted as a shorthand for ``mach_edge``.
 
-    Parameters
-    ----------
-    problem : SimilarityInputs
-        Physics specification (Mach, temperature, wall BC, etc.).
-    options : SolverOptions, optional
-        Numerical settings. If None, uses defaults. Also carries the `equations` field.
-    visc_model : TransportModel, optional
-        Existing flow-state viscosity model. If omitted, construct the model
-        from ``problem.viscosity_model`` and ``problem.viscosity_model_kwargs``.
-    initial_fpp : float, optional
-        Override initial guess for f''(0).
-    initial_gvar : float, optional
-        Override initial guess for g variable -- g(0) for adiabatic, g'(0) for isothermal.
-    initial_wp : float, optional
-        Override initial guess for w'(0) (FSC only).
-    initial_profile : ShootingResult, optional
-        Full solution profile from a nearby converged solve (e.g. the previous
-        Mach point).  When ``solver_method="shooting_then_bvp"`` and shooting
-        fails, this profile is passed to the BVP fallback as the initial mesh
-        guess instead of the failed shooting result.  A physically correct profile
-        from an adjacent parameter point gives the collocation solver a far better
-        starting state than the diverged shooting trajectory.
+    Args:
+        problem (SimilarityInputs): Physics specification (Mach, temperature, wall BC, etc.).
+        options (SolverOptions, optional): Numerical settings. If None, uses defaults. Also carries the `equations` field.
+        visc_model (TransportModel, optional): Existing flow-state viscosity model. If omitted, construct the model
+            from ``problem.viscosity_model`` and ``problem.viscosity_model_kwargs``.
+        initial_fpp (float, optional): Override initial guess for f''(0).
+        initial_gvar (float, optional): Override initial guess for g variable -- g(0) for adiabatic, g'(0) for isothermal.
+        initial_wp (float, optional): Override initial guess for w'(0) (FSC only).
+        initial_profile (ShootingResult, optional): Full solution profile from a nearby converged solve (e.g. the previous
+            Mach point).  When ``solver_method="shooting_then_bvp"`` and shooting
+            fails, this profile is passed to the BVP fallback as the initial mesh
+            guess instead of the failed shooting result.  A physically correct profile
+            from an adjacent parameter point gives the collocation solver a far better
+            starting state than the diverged shooting trajectory.
 
-    Returns
-    -------
-    tuple[FalknerSkanSolution | FalknerSkanCookeSolution, ShootingResult]
-        Solution profiles and shooting method convergence info.
+    Returns:
+        tuple[FalknerSkanSolution | FalknerSkanCookeSolution, ShootingResult]: Solution profiles and shooting method convergence info.
 
-    Examples
-    --------
-    Quickest form — pass fields directly:
+    Examples:
+        Quickest form — pass fields directly:
 
-    >>> from simbl import solve_similarity, SimilarityInputs
-    >>> solution, info = solve_similarity(SimilarityInputs(mach_edge=6.0, temp_edge=55.0))
+        >>> from simbl import solve_similarity, SimilarityInputs
+        >>> solution, info = solve_similarity(SimilarityInputs(mach_edge=6.0, temp_edge=55.0))
 
-    Explicit ``SimilarityInputs`` object:
+        Explicit ``SimilarityInputs`` object:
 
-    >>> from simbl import solve_similarity, SimilarityInputs
-    >>> problem = SimilarityInputs(mach_edge=4.0, temp_edge=220.0, wall_bc="adiabatic")
-    >>> solution, info = solve_similarity(problem)
+        >>> from simbl import solve_similarity, SimilarityInputs
+        >>> problem = SimilarityInputs(mach_edge=4.0, temp_edge=220.0, wall_bc="adiabatic")
+        >>> solution, info = solve_similarity(problem)
 
-    Falkner-Skan-Cooke with sweep:
+        Falkner-Skan-Cooke with sweep:
 
-    >>> problem = SimilarityInputs(mach_edge=2.0, temp_edge=220.0, sweep_angle=30.0)
-    >>> solution, info = solve_similarity(problem, SolverOptions(equations="falkner_skan_cooke"))
+        >>> problem = SimilarityInputs(mach_edge=2.0, temp_edge=220.0, sweep_angle=30.0)
+        >>> solution, info = solve_similarity(problem, SolverOptions(equations="falkner_skan_cooke"))
     """
     # set default options if not provided
     if options is None:

@@ -33,18 +33,12 @@ class SolverProblem:
     The generic shooting method operates exclusively through
     this abstraction, with no direct imports from model packages.
 
-    Attributes
-    ----------
-    ode_function : Callable
-        ODE right-hand side with signature f(eta, y) -> dy.
-    build_initial_condition : Callable[[NDArray], NDArray]
-        Maps shooting variables to initial condition vector y(0).
-    residual_function : Callable[[NDArray], NDArray]
-        Maps edge state y(eta_max) to residual vector.
-    n_shooting : int
-        Number of shooting variables.
-    initial_guess : NDArray[np.float64]
-        Starting values for the shooting variables.
+    Attributes:
+        ode_function (Callable): ODE right-hand side with signature f(eta, y) -> dy.
+        build_initial_condition (Callable[[NDArray], NDArray]): Maps shooting variables to initial condition vector y(0).
+        residual_function (Callable[[NDArray], NDArray]): Maps edge state y(eta_max) to residual vector.
+        n_shooting (int): Number of shooting variables.
+        initial_guess (NDArray[np.float64]): Starting values for the shooting variables.
     """
 
     ode_function: Callable[[float, NDArray[np.float64]], NDArray[np.float64]]
@@ -121,29 +115,24 @@ def shooting_method(
 ) -> ShootingResult:
     """Solve the BVP using shooting method with Newton-Raphson iteration
 
-    Parameters
-    ----------
-    solver_problem : SolverProblem
-        Model-specific problem definition containing:
-        - ODE function (bound to problem parameters and visc_model)
-        - initial condition builder (maps shooting variables to y0)
-        - residual function (maps edge values to residual vector)
-        - number of shooting variables
-        - initial guess for shooting variables (from lookup table or user override)
-    options : SolverOptions
-        Numerical settings containing:
-        - eta_max: maximum value of similarity coordinate
-        - n_points: number of points in eta discretization
-        - tolerance: convergence tolerance for Newton-Raphson iteration
-        - max_iterations: maximum number of Newton-Raphson iterations
-        - ode_method: integration method for solve_ivp (e.g., 'RK45', 'BDF')
-        - epsilon: perturbation step size for finite-difference Jacobian
-        - relaxation_factor: factor to reduce epsilon by when the Jacobian is singular
+    Args:
+        solver_problem (SolverProblem): Model-specific problem definition containing:
+            - ODE function (bound to problem parameters and visc_model)
+            - initial condition builder (maps shooting variables to y0)
+            - residual function (maps edge values to residual vector)
+            - number of shooting variables
+            - initial guess for shooting variables (from lookup table or user override)
+        options (SolverOptions): Numerical settings containing:
+            - eta_max: maximum value of similarity coordinate
+            - n_points: number of points in eta discretization
+            - tolerance: convergence tolerance for Newton-Raphson iteration
+            - max_iterations: maximum number of Newton-Raphson iterations
+            - ode_method: integration method for solve_ivp (e.g., 'RK45', 'BDF')
+            - epsilon: perturbation step size for finite-difference Jacobian
+            - relaxation_factor: factor to reduce epsilon by when the Jacobian is singular
 
-    Returns
-    -------
-    ShootingResult
-        Shooting method result, including convergence status, solution array, and final shooting variable values
+    Returns:
+        ShootingResult: Shooting method result, including convergence status, solution array, and final shooting variable values
     """
 
     # discretize eta (similarity coordinate) based on specified max and number of points

@@ -24,46 +24,35 @@ from simbl.solver.bcs import VALID_WALL_BC_TYPES
 class SimilarityInputs:
     """Inputs for a similarity boundary layer problem independent of numerical solver settings
 
-    Parameters
-    ----------
-    mach_edge : float
-        Edge Mach number
-    temp_edge : float
-        Edge temperature [K]
-    wall_bc : str
-        Wall boundary condition type: "isothermal" or "adiabatic".
-    temp_wall : float, optional
-        Wall temperature [K] for isothermal walls. Default None (adiabatic).
-    prandtl : float, optional
-        Prandtl number. Default 0.72 (air).
-    gamma : float, optional
-        Specific heat ratio. Default 1.4 (air).
-    beta : float, optional
-        Hartree pressure gradient parameter beta = 2m/(m+1). Default 0.0 (flat plate).
-    sweep_angle : float, optional
-        Sweep angle [deg] for Falkner-Skan-Cooke problems. Default 0.0 (2D).
-    viscosity_model : str, optional
-        Transport model for dynamic viscosity. Default "sutherland".
+    Args:
+        mach_edge (float): Edge Mach number
+        temp_edge (float): Edge temperature [K]
+        wall_bc (str): Wall boundary condition type: "isothermal" or "adiabatic".
+        temp_wall (float, optional): Wall temperature [K] for isothermal walls. Default None (adiabatic).
+        prandtl (float, optional): Prandtl number. Default 0.72 (air).
+        gamma (float, optional): Specific heat ratio. Default 1.4 (air).
+        beta (float, optional): Hartree pressure gradient parameter beta = 2m/(m+1). Default 0.0 (flat plate).
+        sweep_angle (float, optional): Sweep angle [deg] for Falkner-Skan-Cooke problems. Default 0.0 (2D).
+        viscosity_model (str, optional): Transport model for dynamic viscosity. Default "sutherland".
 
-    Examples
-    --------
-    Adiabatic flat plate at Mach 4:
+    Examples:
+        Adiabatic flat plate at Mach 4:
 
-    >>> from simbl import SimilarityInputs
-    >>> inputs = SimilarityInputs(
-    ...     mach_edge=4.0,
-    ...     temp_edge=300.0,
-    ...     wall_bc="adiabatic",
-    ... )
+        >>> from simbl import SimilarityInputs
+        >>> inputs = SimilarityInputs(
+        ...     mach_edge=4.0,
+        ...     temp_edge=300.0,
+        ...     wall_bc="adiabatic",
+        ... )
 
-    Isothermal wall (cold wall, T_wall = 300 K):
+        Isothermal wall (cold wall, T_wall = 300 K):
 
-    >>> inputs = SimilarityInputs(
-    ...     mach_edge=6.0,
-    ...     temp_edge=55.0,
-    ...     temp_wall=300.0,
-    ...     wall_bc="isothermal",
-    ... )
+        >>> inputs = SimilarityInputs(
+        ...     mach_edge=6.0,
+        ...     temp_edge=55.0,
+        ...     temp_wall=300.0,
+        ...     wall_bc="isothermal",
+        ... )
     """
 
     # --------------------------------------------------

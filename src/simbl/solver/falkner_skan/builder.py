@@ -37,21 +37,14 @@ def build_solver_problem(
 ) -> SolverProblem:
     """Build a SolverProblem for the Falkner-Skan model
 
-    Parameters
-    ----------
-    problem : SimilarityInputs
-        Physics specification.
-    visc_model : TransportModel
-        Viscosity model instance.
-    initial_fpp : float, optional
-        Override initial guess for f''(0).
-    initial_gvar : float, optional
-        Override initial guess for g variable -- g(0) for adiabatic, g'(0) for isothermal.
+    Args:
+        problem (SimilarityInputs): Physics specification.
+        visc_model (TransportModel): Viscosity model instance.
+        initial_fpp (float, optional): Override initial guess for f''(0).
+        initial_gvar (float, optional): Override initial guess for g variable -- g(0) for adiabatic, g'(0) for isothermal.
 
-    Returns
-    -------
-    SolverProblem
-        Ready-to-solve problem for the generic shooter.
+    Returns:
+        SolverProblem: Ready-to-solve problem for the generic shooter.
     """
     # --------------------------------------------------
     # resolve initial guess

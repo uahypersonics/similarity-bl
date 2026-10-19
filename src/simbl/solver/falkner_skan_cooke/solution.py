@@ -26,24 +26,15 @@ class FalknerSkanCookeSolution:
 
     Extends the 2D Falkner-Skan solution with crossflow profiles g(eta) and g'(eta),
 
-    Attributes
-    ----------
-    eta : ndarray
-        Similarity coordinate
-    f : ndarray
-        Stream function
-    fp : ndarray
-        Velocity ratio u/u_e
-    fpp : ndarray
-        Velocity gradient d^2f/deta^2
-    tau : ndarray
-        Temperature ratio T/T_e (Liu's tau, avoiding 'g' notation for clarity)
-    taup : ndarray
-        Temperature gradient dtau/deta
-    g : ndarray
-        Crossflow velocity ratio w/w_e (Liu's g, denoted g_cf to avoid confusion with temperature)
-    gp : ndarray
-        Crossflow velocity gradient dg_cf/deta
+    Attributes:
+        eta (ndarray): Similarity coordinate
+        f (ndarray): Stream function
+        fp (ndarray): Velocity ratio u/u_e
+        fpp (ndarray): Velocity gradient d^2f/deta^2
+        tau (ndarray): Temperature ratio T/T_e (Liu's tau, avoiding 'g' notation for clarity)
+        taup (ndarray): Temperature gradient dtau/deta
+        g (ndarray): Crossflow velocity ratio w/w_e (Liu's g, denoted g_cf to avoid confusion with temperature)
+        gp (ndarray): Crossflow velocity gradient dg_cf/deta
     """
 
     # grid
@@ -118,20 +109,16 @@ class FalknerSkanCookeSolution:
 def build_solution(result: ShootingResult) -> FalknerSkanCookeSolution:
     """Extract profiles from shooting result into solution dataclass
 
-    Parameters
-    ----------
-    result : ShootingResult
-        Converged shooting method result with 7-row solution array
+    Args:
+        result (ShootingResult): Converged shooting method result with 7-row solution array
 
-    Returns
-    -------
-    FalknerSkanCookeSolution
-        Named solution profiles
-        Contains:
-        - eta: similarity coordinate
-        - f, fp, fpp: stream function and velocity profiles
-        - tau, taup: temperature profile and gradient
-        - g, gp: crossflow velocity profile and gradient
+    Returns:
+        FalknerSkanCookeSolution: Named solution profiles
+            Contains:
+            - eta: similarity coordinate
+            - f, fp, fpp: stream function and velocity profiles
+            - tau, taup: temperature profile and gradient
+            - g, gp: crossflow velocity profile and gradient
     """
 
     # map solution array rows to corresponding dataclass fields

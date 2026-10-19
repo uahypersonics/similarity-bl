@@ -56,28 +56,18 @@ def write(
 ) -> Path:
     """Write solution to file, format auto-detected from extension
 
-    Parameters
-    ----------
-    solution : FalknerSkanSolution | FalknerSkanCookeSolution
-        Solution to write.
-    fname : str or Path
-        Output file path. Format determined by extension.
-    problem : SimilarityInputs, optional
-        Problem specification for metadata.
-    solver_options : SolverOptions, optional
-        Numerical solver settings for provenance metadata.
-    shooting_result : ShootingResult, optional
-        Convergence info for metadata.
+    Args:
+        solution (FalknerSkanSolution | FalknerSkanCookeSolution): Solution to write.
+        fname (str or Path): Output file path. Format determined by extension.
+        problem (SimilarityInputs, optional): Problem specification for metadata.
+        solver_options (SolverOptions, optional): Numerical solver settings for provenance metadata.
+        shooting_result (ShootingResult, optional): Convergence info for metadata.
 
-    Returns
-    -------
-    Path
-        Path to the written file.
+    Returns:
+        Path: Path to the written file.
 
-    Raises
-    ------
-    ValueError
-        If the file extension is not supported.
+    Raises:
+        ValueError: If the file extension is not supported.
     """
 
     # convert fname to Path object

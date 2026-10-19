@@ -74,27 +74,18 @@ def bl_ode(
     or the state vector). They are precomputed once in build_solver_problem
     and passed in here so this function does not recompute them on every call.
 
-    Parameters
-    ----------
-    eta : float
-        Similarity coordinate (independent variable).
-    y : NDArray[np.float64]
-        State vector [f, f', f'', tau, tau', g, g'].
-    problem : SimilarityInputs
-        Physics specification (Mach, Pr, gamma, beta, temp_edge).
-    visc_model : TransportModel
-        Viscosity model instance (from flow_state).
-    S : float
-        Stagnation enthalpy parameter (Liu Eq. 22, at chi=1 for local station).
-        S = 1 + (gamma-1)/2 * Ma_e^2 * cos^2(Lambda)
-    K : float
-        Crossflow recovery factor (Liu Eq. 21).
-        K = [1 + (gamma-1)/2 * Ma_e^2] / S
+    Args:
+        eta (float): Similarity coordinate (independent variable).
+        y (NDArray[np.float64]): State vector [f, f', f'', tau, tau', g, g'].
+        problem (SimilarityInputs): Physics specification (Mach, Pr, gamma, beta, temp_edge).
+        visc_model (TransportModel): Viscosity model instance (from flow_state).
+        S (float): Stagnation enthalpy parameter (Liu Eq. 22, at chi=1 for local station).
+            S = 1 + (gamma-1)/2 * Ma_e^2 * cos^2(Lambda)
+        K (float): Crossflow recovery factor (Liu Eq. 21).
+            K = [1 + (gamma-1)/2 * Ma_e^2] / S
 
-    Returns
-    -------
-    NDArray[np.float64]
-        Derivatives [f', f'', f''', g', g'', tau', tau''].
+    Returns:
+        NDArray[np.float64]: Derivatives [f', f'', f''', g', g'', tau', tau''].
     """
 
     # unpack state vector
